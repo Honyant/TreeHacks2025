@@ -29,7 +29,7 @@ def chat_endpoint(payload: schemas.ChatMessageCreate, db: Session = Depends(get_
       - updated chat history
       - entire research graph (nodes and edges)
     """
-    message_text = payload.get("message")
+    message_text = payload.message
     if not message_text:
         raise HTTPException(status_code=400, detail="No message provided")
 
