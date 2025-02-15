@@ -73,10 +73,9 @@ export interface components {
     schemas: {
         /** ChatMessage */
         ChatMessage: {
+            role: components["schemas"]["RoleEnum"];
             /** Message */
             message: string;
-            /** Role */
-            role: string;
             /** Id */
             id: string;
             /**
@@ -87,6 +86,7 @@ export interface components {
         };
         /** ChatMessageCreate */
         ChatMessageCreate: {
+            role: components["schemas"]["RoleEnum"];
             /** Message */
             message: string;
         };
@@ -147,6 +147,11 @@ export interface components {
              */
             timestamp: string;
         };
+        /**
+         * RoleEnum
+         * @enum {string}
+         */
+        RoleEnum: "user" | "assistant";
         /** ValidationError */
         ValidationError: {
             /** Location */

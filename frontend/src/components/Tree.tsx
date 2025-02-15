@@ -6,7 +6,7 @@ export interface TreeProps {
 
 export const Tree: React.FC<TreeProps> = ({ children }) => {
   const { data, error, isPending } = queryClient.useQuery("post", "/chat", {
-    body: { message: "Hello, world!" },
+    body: { role: "user", message: "Hello, world!" },
   });
 
   return (
