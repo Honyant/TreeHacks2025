@@ -1,7 +1,7 @@
 import { useState } from "react";
 
-import { Tree } from "./components/Tree";
 import { ChatBox } from "./components/ChatBox";
+import { Tree } from "./components/Tree";
 
 import "./App.css";
 
