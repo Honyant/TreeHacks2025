@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Deep Research Frontend</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: row;
+      height: 100vh;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    #chat-container {
+      width: 40%;
+      border-right: 1px solid #ccc;
+      display: flex;
+      flex-direction: column;
+    }
+    #chat-history {
+      flex: 1;
+      overflow-y: auto;
+      margin-bottom: 10px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      background-color: #fafafa;
+    }
+    .chat-message {
+      margin-bottom: 10px;
+      padding: 5px;
+      border-radius: 5px;
+    }
+    .chat-message.user {
+      background-color: #e0f7fa;
+      text-align: right;
+    }
+    .chat-message.assistant {
+      background-color: #ffe0b2;
+      text-align: left;
+    }
+    #chat-input {
+      display: flex;
+    }
+    #chat-input input {
+      flex: 1;
+      padding: 10px;
+      font-size: 16px;
+    }
+    #chat-input button {
+      padding: 10px;
+      font-size: 16px;
+    }
+    #graph-container {
+      width: 60%;
+      overflow-y: auto;
+    }
+    #graph {
+      list-style: none;
+      padding: 0;
+    }
+    #graph li {
+      padding: 8px;
+      margin: 5px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      background: #f9f9f9;
+    }
+    #graph li .node-id {
+      font-size: 0.8em;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <div id="chat-container" class="container">
+    <h2>Chat</h2>
+    <div id="chat-history"></div>
+    <div id="chat-input">
+      <input type="text" id="user-message" placeholder="Type your message here..." />
+      <button id="send-btn">Send</button>
+    </div>
+  </div>
+  <div id="graph-container" class="container">
+    <h2>Research Graph</h2>
+    <ul id="graph"></ul>
+  </div>
+
+  <script>
+    const backendUrl = "http://localhost:8000";
+
+    // Update the chat history UI.
+    function updateChatHistory(chatHistory) {
+      const chatHistoryDiv = document.getElementById("chat-history");
+      chatHistoryDiv.innerHTML = "";
+      chatHistory.forEach(msg => {
+        const div = document.createElement("div");
+        div.classList.add("chat-message", msg.role);
+        div.innerHTML = `<strong>${msg.role}:</strong> ${msg.message}`;
+        chatHistoryDiv.appendChild(div);
+      });
+      // Scroll to bottom
+      chatHistoryDiv.scrollTop = chatHistoryDiv.scrollHeight;
+    }
+
+    // Render the research graph.
+    function updateGraph(graph) {
+      const graphUl = document.getElementById("graph");
+      graphUl.innerHTML = "";
+      // For simplicity, we'll list all nodes.
+      graph.nodes.forEach(node => {
+        const li = document.createElement("li");
+        li.innerHTML = `<strong>Type:</strong> ${node.node_class}<br>
+                        <strong>Content:</strong> ${JSON.stringify(node.content)}<br>
+                        <span class="node-id">ID: ${node.id}</span>`;
+        graphUl.appendChild(li);
+      });
+      // Edges could be rendered here if desired.
+    }
+
+    // Call the /chat endpoint to send a message and update the UI.
+    async function sendMessage(messageText) {
+      try {
+        const response = await fetch(`${backendUrl}/chat`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: messageText })
+        });
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        const data = await response.json();
+        updateChatHistory(data.chat_history);
+        updateGraph(data.graph);
+      } catch (error) {
+        console.error("Error sending message:", error);
+      }
+    }
+
+    document.getElementById("send-btn").addEventListener("click", () => {
+      const input = document.getElementById("user-message");
+      const messageText = input.value.trim();
+      if (messageText !== "") {
+        sendMessage(messageText);
+        input.value = "";
+      }
+    });
+
+    // Optionally, press Enter to send message.
+    document.getElementById("user-message").addEventListener("keypress", function(e) {
+      if (e.key === "Enter") {
+        document.getElementById("send-btn").click();
+      }
+    });
+
+    // On page load, you might want to fetch the existing chat/graph.
+    async function fetchInitialData() {
+      try {
+        // Use /chat with an empty message to fetch existing data (if supported).
+        const response = await fetch(`${backendUrl}/chat`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: "Hello" })
+        });
+        if (response.ok) {
+          const data = await response.json();
+          updateChatHistory(data.chat_history);
+          updateGraph(data.graph);
+        }
+      } catch (error) {
+        console.error("Error fetching initial data:", error);
+      }
+    }
+
+    fetchInitialData();
+  </script>
+</body>
+</html>
