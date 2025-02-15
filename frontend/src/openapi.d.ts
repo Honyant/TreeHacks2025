@@ -75,6 +75,8 @@ export interface components {
         ChatMessage: {
             /** Message */
             message: string;
+            /** Role */
+            role: string;
             /** Id */
             id: string;
             /**
@@ -119,17 +121,31 @@ export interface components {
         Node: {
             /** Node Class */
             node_class: string;
-            /** Content */
-            content: Record<string, never>;
+            content: components["schemas"]["NodeContent"];
             /** Id */
             id: string;
+        };
+        /** NodeContent */
+        NodeContent: {
+            /** Text */
+            text: string;
+            metadata: components["schemas"]["NodeMetadata"];
         };
         /** NodeCreate */
         NodeCreate: {
             /** Node Class */
             node_class: string;
-            /** Content */
-            content: Record<string, never>;
+            content: components["schemas"]["NodeContent"];
+        };
+        /** NodeMetadata */
+        NodeMetadata: {
+            /** Source */
+            source: string;
+            /**
+             * Timestamp
+             * Format: date-time
+             */
+            timestamp: string;
         };
         /** ValidationError */
         ValidationError: {

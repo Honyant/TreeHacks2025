@@ -2,11 +2,13 @@ from datetime import datetime
 from pydantic import BaseModel
 from typing import Any, Dict, List
 
+class NodeMetadata(BaseModel):
+    source: str
+    timestamp: datetime
 
 class NodeContent(BaseModel):
     text: str
-    metadata: Dict[str, Any]
-
+    metadata: NodeMetadata
 
 class NodeBase(BaseModel):
     node_class: str
@@ -41,22 +43,19 @@ class Edge(EdgeBase):
 class ChatMessageBase(BaseModel):
     message: str
 
-
 class ChatMessageCreate(ChatMessageBase):
     pass
 
-
 class ChatMessage(ChatMessageBase):
+    role: str
     id: str
     timestamp: datetime
 
     model_config = {"from_attributes": True}
 
-
 class Graph(BaseModel):
     nodes: List[Node]
     edges: List[Edge]
-
 
 class ChatMessageOut(BaseModel):
     chat_history: List[ChatMessage]
