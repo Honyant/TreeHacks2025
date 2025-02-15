@@ -288,6 +288,7 @@ def process_chat(user_message: str, chat_history: list) -> dict:
         )
     # print edges
     print(f"Edges: {new_edges}")
+    print(f"Nodes: {new_nodes}")
     return {
         "assistant_message": assistant_message,
         "new_nodes": new_nodes,

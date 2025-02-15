@@ -1,11 +1,16 @@
 from datetime import datetime
 from pydantic import BaseModel
-from typing import Any, Dict
+from typing import Any, Dict, List
+
+
+class NodeContent(BaseModel):
+    text: str
+    metadata: Dict[str, Any]
 
 
 class NodeBase(BaseModel):
     node_class: str
-    content: Dict[str, Any]
+    content: NodeContent
 
 
 class NodeCreate(NodeBase):
@@ -49,10 +54,10 @@ class ChatMessage(ChatMessageBase):
 
 
 class Graph(BaseModel):
-    nodes: list[Node]
-    edges: list[Edge]
+    nodes: List[Node]
+    edges: List[Edge]
 
 
 class ChatMessageOut(BaseModel):
-    chat_history: list[ChatMessage]
+    chat_history: List[ChatMessage]
     graph: Graph
