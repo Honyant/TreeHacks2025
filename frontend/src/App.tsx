@@ -3,8 +3,6 @@ import { useState } from "react";
 import { ChatBox } from "./components/ChatBox";
 import { Tree } from "./components/Tree";
 
-import "./App.css";
-
 function App() {
   const [count, setCount] = useState(0);
 

@@ -31,11 +31,8 @@ export const ChatBox: React.FC = () => {
   }, [messages]);
 
   return (
-    <div className="fixed top-4 right-4 flex flex-col space-y-2">
-      <button
-        onClick={toggleChat}
-        className="bg-gray-700 text-white p-3 rounded-full shadow-lg focus:outline-none inline-block w-auto"
-      >
+    <div className="fixed top-4 right-4 flex flex-col space-y-2 z-10">
+      <button onClick={toggleChat} className="btn btn-primary">
         {isOpen ? "Minimize Chat" : "Open Chat"}
       </button>
       {isOpen && (
