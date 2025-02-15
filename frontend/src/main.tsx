@@ -4,7 +4,6 @@ import { createRoot } from "react-dom/client";
 
 import App from "./App.tsx";
 
-import "./index.css";
 import "@xyflow/react/dist/style.css";
 
 const queryClient = new QueryClient({
