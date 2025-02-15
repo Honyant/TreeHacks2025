@@ -34,14 +34,14 @@ export const ChatBox: React.FC = () => {
     <div className="fixed top-4 right-4 flex flex-col space-y-2">
       <button
         onClick={toggleChat}
-        className="bg-gray-700 text-white p-3 rounded-full shadow-lg focus:outline-none inline-block"
+        className="bg-gray-700 text-white p-3 rounded-full shadow-lg focus:outline-none inline-block w-auto"
       >
         {isOpen ? "Minimize Chat" : "Open Chat"}
       </button>
       {isOpen && (
         <div className="w-96 h-120 bg-white border border-gray-300 rounded-lg shadow-lg flex flex-col">
           {/* header */}
-          <div className="p-4 border-b border-gray-200 bg-blue-50">
+          <div className="p-4 border-b border-gray-200 bg-blue-5 rounded-full0">
             <h2 className="text-lg font-semibold text-gray-800">Chat</h2>
           </div>
 
