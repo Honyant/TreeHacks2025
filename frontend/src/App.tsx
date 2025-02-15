@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { Tree } from "./components/Tree";
+import { ChatBox } from "./components/ChatBox";
 
 import "./App.css";
 
@@ -21,6 +22,7 @@ function App() {
       <p className="read-the-docs">
         Click on the Vite and React logos to learn more
       </p>
+      <ChatBox />
       <Tree />
     </>
   );
