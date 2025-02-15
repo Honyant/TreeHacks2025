@@ -71,10 +71,44 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** ChatMessage */
+        ChatMessage: {
+            /** Message */
+            message: string;
+            /** Id */
+            id: string;
+            /**
+             * Timestamp
+             * Format: date-time
+             */
+            timestamp: string;
+        };
         /** ChatMessageCreate */
         ChatMessageCreate: {
             /** Message */
             message: string;
+        };
+        /** ChatMessageOut */
+        ChatMessageOut: {
+            /** Chat History */
+            chat_history: components["schemas"]["ChatMessage"][];
+            graph: components["schemas"]["Graph"];
+        };
+        /** Edge */
+        Edge: {
+            /** From Node Id */
+            from_node_id: string;
+            /** To Node Id */
+            to_node_id: string;
+            /** Id */
+            id: string;
+        };
+        /** Graph */
+        Graph: {
+            /** Nodes */
+            nodes: components["schemas"]["Node"][];
+            /** Edges */
+            edges: components["schemas"]["Edge"][];
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -134,7 +168,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["ChatMessageOut"];
                 };
             };
             /** @description Validation Error */

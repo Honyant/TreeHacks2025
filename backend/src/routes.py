@@ -21,7 +21,7 @@ def get_db():
         db.close()
 
 
-@router.post("/chat")
+@router.post("/chat", response_model=schemas.ChatMessageOut)
 def chat_endpoint(payload: schemas.ChatMessageCreate, db: Session = Depends(get_db)):
     """
     Accepts a user message, updates the chat history,
