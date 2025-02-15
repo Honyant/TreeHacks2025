@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 export const ChatBox: React.FC = () => {
   const [isOpen, setIsOpen] = useState(true);
@@ -59,11 +59,11 @@ export const ChatBox: React.FC = () => {
                   >
                     <div
                       className={`inline-block text-sm px-4 py-2 rounded-lg whitespace-normal text-wrap break-words max-w-[80%]
-                                                ${isUser
-                          ? "bg-green-100 text-gray-700 text-right" // user
-                          : "bg-blue-100 text-gray-700 text-left" // server
-                        }`
-                      }
+                                                ${
+                                                  isUser
+                                                    ? "bg-green-100 text-gray-700 text-right" // user
+                                                    : "bg-blue-100 text-gray-700 text-left" // server
+                                                }`}
                     >
                       {msg.content}
                     </div>
@@ -92,4 +92,3 @@ export const ChatBox: React.FC = () => {
     </div>
   );
 };
-
