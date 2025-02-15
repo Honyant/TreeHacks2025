@@ -12,6 +12,7 @@ from database import SessionLocal
 
 router = APIRouter()
 
+
 def get_db():
     db = SessionLocal()
     try:
@@ -19,8 +20,9 @@ def get_db():
     finally:
         db.close()
 
+
 @router.post("/chat")
-def chat_endpoint(payload: dict, db: Session = Depends(get_db)):
+def chat_endpoint(payload: schemas.ChatMessageCreate, db: Session = Depends(get_db)):
     """
     Accepts a user message, updates the chat history,
     processes the message via the internal engine, and returns:
@@ -36,14 +38,18 @@ def chat_endpoint(payload: dict, db: Session = Depends(get_db)):
         id=str(uuid.uuid4()),
         role="user",
         message=message_text,
-        timestamp=datetime.utcnow()
+        timestamp=datetime.utcnow(),
     )
     db.add(user_msg)
     db.commit()
 
     # Retrieve full chat history (ordered by timestamp)
-    chat_history_rows = db.query(models.ChatMessage).order_by(models.ChatMessage.timestamp).all()
-    chat_history = [{"role": msg.role, "message": msg.message} for msg in chat_history_rows]
+    chat_history_rows = (
+        db.query(models.ChatMessage).order_by(models.ChatMessage.timestamp).all()
+    )
+    chat_history = [
+        {"role": msg.role, "message": msg.message} for msg in chat_history_rows
+    ]
 
     # Process the chat with the engine (LLM, agent actions, etc.)
     result = processing_engine.process_chat(message_text, chat_history)
@@ -53,7 +59,7 @@ def chat_endpoint(payload: dict, db: Session = Depends(get_db)):
         id=str(uuid.uuid4()),
         role="assistant",
         message=result["assistant_message"],
-        timestamp=datetime.utcnow()
+        timestamp=datetime.utcnow(),
     )
     db.add(assistant_msg)
     db.commit()
@@ -63,14 +69,14 @@ def chat_endpoint(payload: dict, db: Session = Depends(get_db)):
         node = models.Node(
             id=node_data["id"],
             node_class=node_data["node_class"],
-            content=node_data["content"]
+            content=node_data["content"],
         )
         db.add(node)
     for edge_data in result.get("new_edges", []):
         edge = models.Edge(
             id=edge_data["id"],
             from_node_id=edge_data["from"],
-            to_node_id=edge_data["to"]
+            to_node_id=edge_data["to"],
         )
         db.add(edge)
     db.commit()
@@ -82,10 +88,16 @@ def chat_endpoint(payload: dict, db: Session = Depends(get_db)):
     edges_out = [schemas.Edge.from_orm(e) for e in edges]
 
     # Retrieve updated chat history
-    chat_history_rows = db.query(models.ChatMessage).order_by(models.ChatMessage.timestamp).all()
+    chat_history_rows = (
+        db.query(models.ChatMessage).order_by(models.ChatMessage.timestamp).all()
+    )
     chat_history_out = [schemas.ChatMessage.from_orm(msg) for msg in chat_history_rows]
 
-    return {"chat_history": chat_history_out, "graph": {"nodes": nodes_out, "edges": edges_out}}
+    return {
+        "chat_history": chat_history_out,
+        "graph": {"nodes": nodes_out, "edges": edges_out},
+    }
+
 
 @router.post("/nodes", response_model=schemas.Node)
 def add_node(node: schemas.NodeCreate, db: Session = Depends(get_db)):
@@ -93,14 +105,13 @@ def add_node(node: schemas.NodeCreate, db: Session = Depends(get_db)):
     Manually add a node to the research graph.
     """
     new_node = models.Node(
-        id=str(uuid.uuid4()),
-        node_class=node.node_class,
-        content=node.content
+        id=str(uuid.uuid4()), node_class=node.node_class, content=node.content
     )
     db.add(new_node)
     db.commit()
     db.refresh(new_node)
     return new_node
+
 
 @router.delete("/nodes/{node_id}")
 def delete_node(node_id: str, db: Session = Depends(get_db)):
@@ -112,9 +123,13 @@ def delete_node(node_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Node not found")
     db.delete(node)
     # Delete edges connected to this node using SQLAlchemy's or_ helper
-    edges = db.query(models.Edge).filter(
-        or_(models.Edge.from_node_id == node_id, models.Edge.to_node_id == node_id)
-    ).all()
+    edges = (
+        db.query(models.Edge)
+        .filter(
+            or_(models.Edge.from_node_id == node_id, models.Edge.to_node_id == node_id)
+        )
+        .all()
+    )
     for edge in edges:
         db.delete(edge)
     db.commit()
