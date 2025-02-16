@@ -1,4 +1,5 @@
 import uuid
+import json
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
@@ -61,6 +62,10 @@ def print_nodes(nodes: list[schemas.NodeV2]) -> None:
         print(f"\nTitle: {node.name}")
         print(f"Content: {node.content}")
 
+def export_nodes(nodes: list[schemas.NodeV2], file_path: str) -> None:
+    with open(file_path, 'w') as f:
+        json.dump({node.id: node.model_dump() for node in nodes}, f, indent=2)
+
 
 mode_i = """
 You are an investigative journalist's research agent.
@@ -84,7 +89,7 @@ Some potential insights you can generate are:
 
 Each node should be an individual topic without subtopics. Please separate subtopics into distinct nodes.
 Do not create frivolous nodes that are similar to other existing nodes. Output the list of nodes in the order of priority and importance.
-Limit the number of nodes you create to 6. Only the first six nodes will be considered.
+Limit the number of nodes you create to 4. Only the first six nodes will be considered.
 
 You have access to the following functions:
 [create_node]

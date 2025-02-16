@@ -119,7 +119,7 @@ def execute_mode_ii(nodes: list[schemas.NodeV2], active_node: str):
     return new_nodes
 
 
-def execute_mode_iii(nodes: list[schemas.NodeV2], active_node: str):
+def execute_mode_iii(nodes: list[schemas.NodeV2], active_node: str, user_message: str):
     """
     Executes mode III of the research agent, which expands knowledge by analyzing 
     the situation and generating new insights for the active node.
@@ -127,7 +127,13 @@ def execute_mode_iii(nodes: list[schemas.NodeV2], active_node: str):
     if not active_node:
         print("No active node selected")
         return
-
+    
+    current_node = get_node_by_id(nodes, active_node)
+    if not current_node:
+        print(f"Could not find active node with id: {active_node}")
+        return
+    
+    
 
 
 def process_chat(user_message: str, chat_history: list) -> dict:
@@ -733,16 +739,15 @@ if __name__ == "__main__":
     active_node = None
     root_node_id = init_agent(nodes, active_node)
     queue.append(root_node_id)
-    for i in range(6):
+    for i in range(5):
         if queue:
-            active_node = queue.pop()
+            active_node = queue.pop(0)
             new_nodes = execute_mode_ii(nodes, active_node)
             for node in new_nodes:
                 queue.append(node)
     
     print_nodes(nodes)
-    with open('nodes.json', 'w') as f:
-        json.dump([node.model_dump() for node in nodes], f, indent=2)
+    export_nodes(nodes, "nodes.json")
 
 
 # tools = [
