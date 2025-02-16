@@ -1,6 +1,7 @@
 import { create } from "zustand";
+
+import { ChatSlice,createChatSlice } from "./slices/chatSlice";
 import { createGraphSlice, GraphSlice } from "./slices/graphSlice";
-import { createChatSlice, ChatSlice } from "./slices/chatSlice";
 
 export type Store = GraphSlice & ChatSlice;
 

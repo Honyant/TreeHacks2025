@@ -111,7 +111,7 @@ export const ChatBox: React.FC = () => {
       {isOpen && (
         <div
           className={`
-            w-96 h-96 bg-base-content border rounded-lg shadow-lg flex flex-col
+            w-96 h-96 border rounded-lg shadow-lg flex flex-col
             transition-all duration-300 bg-base-content
             ${isOpen ? "opacity-100" : "opacity-0 pointer-events-none"}
           `}

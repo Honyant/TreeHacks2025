@@ -52,7 +52,7 @@ export const ExpandBox: React.FC = () => {
     <div>
       <div className="card h-96 w-96 shadow-xl fixed top-4 right-4 z-10 mb-2 flex flex-col">
         <div
-          className={`p-2 flex flex-col h-full border-b rounded-lg gap-2 p-4 ${node_color}`}
+          className={`flex flex-col h-full border-b rounded-lg gap-2 p-4 ${node_color}`}
         >
           <h2 className="text-xl font-bold pl-2 text-black mt-4 text-center">
             {data.name}
