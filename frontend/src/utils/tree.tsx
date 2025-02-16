@@ -9,27 +9,32 @@ import { components } from "../openapi";
 import dumpTree from "./dump.json";
 
 interface RawTree {
-  [k: string]: Partial<components["schemas"]["Graph"]["nodes"][number]>;
+  [k: string]: Partial<
+    components["schemas"]["ChatMessageOut"]["graph"][string]
+  >;
 }
 
 export type CustomNode = Node<
   Partial<
-    Omit<components["schemas"]["Graph"]["nodes"][number], "type"> & {
+    Omit<components["schemas"]["ChatMessageOut"]["graph"][string], "type"> & {
       label: string;
       direction: string;
       isRoot: boolean;
     }
   >,
-  components["schemas"]["Graph"]["nodes"][number]["type"]
+  components["schemas"]["ChatMessageOut"]["graph"][string]["type"]
 >;
 
 const nodeClassNames: {
-  [k in components["schemas"]["Graph"]["nodes"][number]["type"]]: React.ComponentProps<"div">["className"];
+  [k in components["schemas"]["ChatMessageOut"]["graph"][string]["type"]]: React.ComponentProps<"div">["className"];
 } = {
+  root: "bg-gray-100",
   text: "bg-blue-100",
-  image: "bg-green-100",
-  link: "bg-yellow-100",
-  audio: "bg-red-100",
+  question: "bg-green-100",
+  email: "bg-yellow-100",
+  call: "bg-purple-100",
+  file: "bg-orange-100",
+  search: "bg-red-100",
 };
 
 export const initialTree = dumpTree as unknown as RawTree;
@@ -63,13 +68,18 @@ const entitreeSettings = {
 
 export const layoutElements = (
   tree: typeof initialTree,
-  direction: "TB" | "LR" = "LR",
-  rootId: string = "099ae778-8092-408d-8738-105741fbfb82"
+  direction: "TB" | "LR" = "LR"
 ) => {
   const isTreeHorizontal = direction === "LR";
 
+  const rootNode = Object.values(tree).find((node) => node.type === "root");
+  if (!rootNode || !rootNode.id) {
+    console.error("No root node found in the tree.");
+    return { nodes: [], edges: [] };
+  }
+
   const { nodes: entitreeNodes, rels: entitreeEdges } = layoutFromMap(
-    rootId,
+    rootNode.id,
     tree,
     {
       ...entitreeSettings,
@@ -103,7 +113,12 @@ export const layoutElements = (
 
   entitreeNodes.forEach((node) => {
     const newNode: CustomNode = {
-      data: { name: node.name, direction, isRoot: node.id === rootId, ...node },
+      data: {
+        name: node.name,
+        direction,
+        isRoot: node.type === "root",
+        ...node,
+      },
       id: node.id ?? "",
       position: {
         x: node.x,
