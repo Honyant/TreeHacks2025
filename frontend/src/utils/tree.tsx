@@ -3,7 +3,20 @@ import { type Edge, type Node, type NodeProps, Position } from "@xyflow/react";
 import { Handle } from "@xyflow/react";
 import { layoutFromMap } from "entitree-flex";
 
-export const initialTree = {
+interface Tree {
+  [k: string]: {
+    id: string;
+    name: string;
+    type?: "input" | "default" | "output";
+    children?: string[];
+    siblings?: string[];
+    spouses?: string[];
+    isSpouse?: boolean;
+    isSibling?: boolean;
+  };
+}
+
+export const initialTree: Tree = {
   1: {
     id: "1",
     name: "root",
@@ -41,7 +54,7 @@ export const initialTree = {
 };
 
 const nodeWidth = 150;
-const nodeHeight = 36;
+const nodeHeight = 100;
 
 enum Orientation {
   Vertical = "vertical",
@@ -92,7 +105,7 @@ export const layoutElements = (
     const sourceNode = edge.source.id;
     const targetNode = edge.target.id;
 
-    const newEdge: Edge = {};
+    const newEdge: Partial<Edge> = {};
 
     newEdge.id = "e" + sourceNode + targetNode;
     newEdge.source = sourceNode;
@@ -115,11 +128,11 @@ export const layoutElements = (
       newEdge.targetHandle = isTreeHorizontal ? Left : Top;
     }
 
-    edges.push(newEdge);
+    edges.push(newEdge as Edge);
   });
 
   entitreeNodes.forEach((node) => {
-    const newNode: CustomNode = {};
+    const newNode: Partial<CustomNode> = {};
 
     const isSpouse = !!node?.isSpouse;
     const isSibling = !!node?.isSibling;
@@ -148,7 +161,7 @@ export const layoutElements = (
       y: node.y,
     };
 
-    nodes.push(newNode);
+    nodes.push(newNode as CustomNode);
   });
 
   return { nodes, edges };
@@ -158,14 +171,14 @@ const { Top, Bottom, Left, Right } = Position;
 
 export type CustomNode = Node<
   {
-    isSpouse: boolean;
+    isSpouse?: boolean;
     isSibling?: boolean;
     label: string;
     direction: string;
     isRoot?: boolean;
-    children?: any[];
-    siblings?: any[];
-    spouses?: any[];
+    children?: unknown[];
+    siblings?: unknown[];
+    spouses?: unknown[];
   },
   "custom"
 >;
@@ -190,9 +203,9 @@ export const customNode = memo(({ data }: NodeProps<CustomNode>) => {
   const hasSpouses = !!data?.spouses?.length;
 
   return (
-    <div className="px-4 py-2 shadow-md rounded-md border-2">
+    <div className="px-4 py-2 shadow-md rounded-md border-2 h-[100px] w-[150px]">
       <div className="flex">
-        <div className="rounded-full w-12 h-12 flex justify-center items-center ">
+        <div className="rounded-full min-w-12 min-h-12 justify-center items-center flex border-2">
           {data.direction}
         </div>
         <div className="ml-2">

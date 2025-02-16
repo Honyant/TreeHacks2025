@@ -8,7 +8,6 @@ import {
   useNodesState,
 } from "@xyflow/react";
 
-import { queryClient } from "../api/client";
 import {
   CustomNode,
   customNode,
@@ -32,14 +31,8 @@ const { nodes: layoutedNodes, edges: layoutedEdges } = layoutElements(
 
 const panOnDrag = [1, 2];
 
-export interface TreeProps {
-  children?: React.ReactNode;
-}
-export const Tree: React.FC<TreeProps> = ({ children }) => {
-  const { data, error, isPending } = queryClient.useQuery("post", "/chat", {
-    body: { role: "user", message: "Hello, world!" },
-  });
-
+export type TreeProps = object;
+export const Tree: React.FC<TreeProps> = () => {
   const [nodes, setNodes, onNodesChange] =
     useNodesState<CustomNode>(layoutedNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(layoutedEdges);
@@ -59,7 +52,7 @@ export const Tree: React.FC<TreeProps> = ({ children }) => {
   );
 
   return (
-    <div style={{ width: "100vw", height: "100vh" }}>
+    <div style={{ width: "100vw", height: "90vh" }}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -72,6 +65,7 @@ export const Tree: React.FC<TreeProps> = ({ children }) => {
         selectionOnDrag
         panOnDrag={panOnDrag}
         selectionMode={SelectionMode.Partial}
+        proOptions={{ hideAttribution: true }}
       >
         <Panel position="top-right">
           <button onClick={() => onLayout("TB")}>vertical layout</button>
