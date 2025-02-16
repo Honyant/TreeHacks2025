@@ -21,6 +21,7 @@ import {
   layoutElements,
 } from "./utils/tree";
 import { components } from "./openapi";
+import { useStore } from "./store";
 
 const nodeTypes: {
   [key in components["schemas"]["ChatMessageOut"]["graph"][string]["type"]]: React.FC<
@@ -50,7 +51,7 @@ function App() {
     body: { role: "user", message: "Hello, world!" },
   });
 
-  const [globalLoading, setGlobalLoading] = useState(false);
+  const globalLoading = useStore((state) => state.globalLoading);
 
   const initialMessages = useMemo(() => {
     return (
@@ -120,10 +121,7 @@ function App() {
         ) : error ? (
           <div>Error: {JSON.stringify(error)}</div>
         ) : (
-          <ChatBox
-            initialMessages={initialMessages}
-            setGlobalLoading={setGlobalLoading}
-          />
+          <ChatBox initialMessages={initialMessages} />
         )}
         {globalLoading && <div>Loading...</div>}
       </div>
