@@ -1,8 +1,13 @@
 from datetime import datetime
 from pydantic import BaseModel
 from typing import Any, Dict, List
-
 from enum import Enum
+
+
+
+class ModelOutput(BaseModel):
+    title: str
+    content: str
 
 
 class NodeType(str, Enum):  # to be displayed differently in the UI
