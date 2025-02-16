@@ -42,8 +42,8 @@ class RoleEnum(str, Enum):
 
 class ChatMessageBase(BaseModel):
     role: RoleEnum
+    node_id: str
     message: str
-
 
 class ChatMessageCreate(ChatMessageBase):
     pass
