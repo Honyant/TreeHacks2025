@@ -62,6 +62,8 @@ export interface components {
         /** ChatMessage */
         ChatMessage: {
             role: components["schemas"]["RoleEnum"];
+            /** Node Id */
+            node_id: string;
             /** Message */
             message: string;
             /** Id */
@@ -75,6 +77,8 @@ export interface components {
         /** ChatMessageCreate */
         ChatMessageCreate: {
             role: components["schemas"]["RoleEnum"];
+            /** Node Id */
+            node_id: string;
             /** Message */
             message: string;
         };
