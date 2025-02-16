@@ -11,20 +11,24 @@ function App() {
   });
 
   const initialMessages = useMemo(() => {
-    return (data)?.chat_history.map((msg) => ({
-      role: msg.role,
-      content: msg.message,
-    })) || [];
+    return (
+      data?.chat_history.map((msg) => ({
+        role: msg.role,
+        content: msg.message,
+      })) || []
+    );
   }, [data]);
 
   return (
     <>
       <div className="max-h-[10vh] min-h-[10vh]">
-        <h1 className="text-3xl font-bold">Chat Application</h1>
-        {isPending && <div>Loading chat history...</div>}
-        {error && <div>Error: {JSON.stringify(error)}</div>}
-        {!isPending && !error && <ChatBox initialMessages={initialMessages} />}
-        {(isPending || error) && <ChatBox initialMessages={[]}/>}
+        {isPending ? (
+          <div>Loading chat history...</div>
+        ) : error ? (
+          <div>Error: {JSON.stringify(error)}</div>
+        ) : (
+          <ChatBox initialMessages={initialMessages} />
+        )}
       </div>
 
       <ReactFlowProvider>

@@ -113,10 +113,11 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ initialMessages = [] }) => {
                     className={`mb-2 flex ${isUser ? "justify-end" : "justify-start"}`}
                   >
                     <div
-                      className={`inline-block text-sm px-4 py-2 rounded-lg text-wrap break-words max-w-[80%] ${isUser
+                      className={`inline-block text-sm px-4 py-2 rounded-lg text-wrap break-words max-w-[80%] ${
+                        isUser
                           ? "chat chat-end chat-bubble text-right" // user
                           : "chat chat-start chat-bubble text-left" // assistant
-                        }`}
+                      }`}
                     >
                       {msg.content}
                     </div>
@@ -151,7 +152,9 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ initialMessages = [] }) => {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") { handleSend(); }
+                  if (e.key === "Enter") {
+                    handleSend();
+                  }
                 }}
                 placeholder="Type your message..."
                 className="w-full input rounded-lg pr-10"
