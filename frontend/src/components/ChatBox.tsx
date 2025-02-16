@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { useShallow } from "zustand/shallow";
 
 import { useClient } from "../api/client";
@@ -6,28 +6,47 @@ import { useStore } from "../store";
 
 export type Message = {
   role: "user" | "assistant";
+
   content: string;
 };
 
-export interface ChatBoxProps {
-  initialMessages?: Message[];
-}
-
-export const ChatBox: React.FC<ChatBoxProps> = ({ initialMessages = [] }) => {
+// export interface ChatBoxProps {
+//   initialMessages?: Message[];
+// }
+export const ChatBox: React.FC = () => {
   const queryClient = useClient();
-  const { setGlobalLoading, selectedNodeId, setGraph } = useStore(
+
+  const {
+    isOpen,
+    toggleChat,
+    messages,
+    addMessage,
+    input,
+    setInput,
+    showFileUpload,
+    toggleFileUpload,
+    selectedFile,
+    setSelectedFile,
+    selectedNodeId,
+    setGlobalLoading,
+    setGraph,
+  } = useStore(
     useShallow((state) => ({
+      isOpen: state.isOpen,
+      toggleChat: state.toggleChat,
+      messages: state.messages,
+      addMessage: state.addMessage,
+      input: state.input,
+      setInput: state.setInput,
+      showFileUpload: state.showFileUpload,
+      toggleFileUpload: state.toggleFileUpload,
+      selectedFile: state.selectedFile,
+      setSelectedFile: state.setSelectedFile,
       selectedNodeId: state.selectedNodeId,
       setGlobalLoading: state.setGlobalLoading,
       setGraph: state.setGraph,
     }))
   );
-
-  const [isOpen, setIsOpen] = useState(true);
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
-  const [input, setInput] = useState("");
-  const [showFileUpload, setShowFileUpload] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -35,16 +54,13 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ initialMessages = [] }) => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const toggleChat = () => setIsOpen((prev) => !prev);
-
-  const hasInitialMessages = () => initialMessages.length > 0;
   const chatMutation = queryClient.useMutation("post", "/chat", {});
 
   const handleSend = async () => {
     const trimmedInput = input.trim();
     if (!trimmedInput) return;
-    // add user message to state
-    setMessages((prev) => [...prev, { role: "user", content: trimmedInput }]);
+
+    addMessage({ role: "user", content: trimmedInput });
     setInput("");
     setGlobalLoading(true);
 
@@ -62,18 +78,16 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ initialMessages = [] }) => {
       const chatHistory = data.chat_history || ["", ""];
       const assistantMessage = chatHistory[chatHistory.length - 1];
       if (assistantMessage && assistantMessage.role === "assistant") {
-        setMessages((prev) => [
-          ...prev,
-          { role: "assistant", content: assistantMessage.message },
-        ]);
+        addMessage({
+          role: "assistant",
+          content: assistantMessage.message,
+        });
       }
     } catch (error) {
       console.error("Error sending message:", error);
       setGlobalLoading(false);
     }
   };
-
-  const toggleFileUpload = () => setShowFileUpload((prev) => !prev);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
@@ -89,7 +103,7 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ initialMessages = [] }) => {
     // upload file to backend
     console.log("Uploading file:", selectedFile);
     setSelectedFile(null);
-    setShowFileUpload(false);
+    toggleFileUpload();
   };
 
   return (
@@ -98,25 +112,18 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ initialMessages = [] }) => {
         <div
           className={`
             w-96 h-96 bg-base-content border rounded-lg shadow-lg flex flex-col
-            transition-all duration-300 bg-gray-100
+            transition-all duration-300 bg-base-content
             ${isOpen ? "opacity-100" : "opacity-0 pointer-events-none"}
           `}
         >
           {/* header */}
           <div className="p-4 border-b rounded-t-lg bg-base-content px-2">
             <h2 className="text-2xl font-bold pl-2 text-black">Chat</h2>
-            <hr className="h-px w-1/2 justify-center m-1 border-0 bg-black"></hr>
+            <hr className="h-px w-1/2 justify-center m-1 border-0 bg-black" />
           </div>
 
-          {!hasInitialMessages() && (
-            <div className="p-2 text-center rounded-lg m-2 bg-red-200 mx-4">
-              <h2 className="text-red-800 text-xl font-bold">
-                Unable to load chat.
-              </h2>
-            </div>
-          )}
           {/* chat messages */}
-          <div className={`p-4 flex-1 overflow-y-auto rounded-lg`}>
+          <div className="p-4 flex-1 overflow-y-auto rounded-lg">
             {messages.length === 0 ? (
               <p className="text-gray-500 text-sm">No messages yet...</p>
             ) : (
@@ -128,10 +135,10 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ initialMessages = [] }) => {
                     className={`mb-2 flex ${isUser ? "justify-end" : "justify-start"}`}
                   >
                     <div
-                      className={`inline-block text-sm px-4 py-2 rounded-lg text-wrap break-words max-w-[80%] text-black ${
+                      className={`inline-block text-sm px-4 py-2 rounded-lg break-words max-w-[80%] text-black ${
                         isUser
-                          ? "chat chat-end chat-bubble text-right bg-blue-200" // user
-                          : "chat chat-start chat-bubble text-left bg-green-200" // assistant
+                          ? "chat chat-end chat-bubble text-right bg-blue-200"
+                          : "chat chat-start chat-bubble text-left bg-green-200"
                       }`}
                     >
                       {msg.content}
@@ -143,13 +150,13 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ initialMessages = [] }) => {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* input box */}
+          {/* Input box */}
           <div className="input-bordered rounded-full py-2 top-2 flex flex-col gap-2 px-2">
             {showFileUpload && (
               <div className="flex items-center gap-2">
                 <input
                   type="file"
-                  className="file-input file-input-bordered file-input-neutral w-full rounded-lg text-black text-bold bg-base-content"
+                  className="file-input file-input-bordered file-input-neutral w-full rounded-lg text-black bg-base-content"
                   onChange={handleFileChange}
                 />
                 <button
@@ -177,7 +184,7 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ initialMessages = [] }) => {
               <button
                 type="button"
                 onClick={toggleFileUpload}
-                className="btn btn-circle btn-sm bg-blue-200 text-black text-2xl text-bold absolute inset-y-0 my-auto right-2 no-animation"
+                className="btn btn-circle btn-sm bg-blue-200 text-black text-2xl absolute inset-y-0 my-auto right-2"
               >
                 +
               </button>

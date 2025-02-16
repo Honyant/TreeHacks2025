@@ -143,7 +143,7 @@ function App() {
   return (
     <div className="w-screen h-screen">
       <div className="max-h-[10vh] min-h-[10vh]">
-        {selectedNodeId ? <ChatBox initialMessages={[]} /> : null}
+        {selectedNodeId ? <ChatBox /> : null}
         {selectedNodeId && <ExpandBox />}
         {globalLoading && <div>Loading...</div>}
       </div>
