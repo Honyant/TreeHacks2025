@@ -6,6 +6,8 @@ import { twMerge } from "tailwind-merge";
 
 import { components } from "../openapi";
 
+import dumpTree from "./dump.json";
+
 interface RawTree {
   [k: string]: Partial<components["schemas"]["Graph"]["nodes"][number]>;
 }
@@ -30,44 +32,10 @@ const nodeClassNames: {
   audio: "bg-red-100",
 };
 
-export const initialTree: RawTree = {
-  1: {
-    id: "1",
-    name: "root",
-    type: "text",
-    children: ["2", "3"],
-  },
-  2: { id: "2", name: "child2" },
-  3: {
-    id: "3",
-    name: "child3",
-    type: "audio",
-    children: ["4", "5", "11", "12", "13", "14", "15"],
-  },
-  4: { id: "4", name: "grandChild4" },
-  5: { id: "5", name: "grandChild5" },
-  11: { id: "11", name: "grandChild5" },
-  12: { id: "12", name: "grandChild5" },
-  13: { id: "13", name: "grandChild5" },
-  14: { id: "14", name: "grandChild5" },
-  15: { id: "15", name: "grandChild5", type: "image" },
-  6: { id: "6", type: "link", name: "spouse of child 3" },
-  8: {
-    id: "8",
-    name: "root sibling",
-  },
-  9: {
-    id: "9",
-    name: "child3 sibling",
-  },
-  10: {
-    id: "10",
-    name: "root spouse",
-  },
-};
+export const initialTree = dumpTree as unknown as RawTree;
 
-const nodeWidth = 150;
-const nodeHeight = 100;
+const nodeWidth = 250;
+const nodeHeight = 150;
 
 enum Orientation {
   Vertical = "vertical",
@@ -95,8 +63,8 @@ const entitreeSettings = {
 
 export const layoutElements = (
   tree: typeof initialTree,
-  rootId: string,
-  direction: "TB" | "LR" = "TB"
+  direction: "TB" | "LR" = "LR",
+  rootId: string = "285ab462-37cf-40b2-a654-3a94d7ef8e05"
 ) => {
   const isTreeHorizontal = direction === "LR";
 
@@ -153,7 +121,7 @@ export const layoutElements = (
 const { Top, Bottom, Left, Right } = Position;
 
 export const customNode = memo(({ data, type }: NodeProps<CustomNode>) => {
-  const { label, direction } = data;
+  const { name, direction, content } = data;
 
   const isTreeHorizontal = direction === "LR";
 
@@ -167,17 +135,21 @@ export const customNode = memo(({ data, type }: NodeProps<CustomNode>) => {
   return (
     <div
       className={twMerge(
-        "px-4 py-2 shadow-md rounded-md border-2 h-[100px] w-[150px]",
+        "flex flex-col px-4 py-2 shadow-md rounded-md border-2",
         nodeClassNames[type]
       )}
+      style={{
+        minWidth: nodeWidth,
+        minHeight: nodeHeight,
+        maxWidth: nodeWidth,
+        maxHeight: nodeHeight,
+      }}
     >
-      <div className="flex">
-        <div className="rounded-full min-w-12 min-h-12 justify-center items-center flex border-2">
-          {data.direction}
-        </div>
-        <div className="ml-2">
-          <div className="text-lg font-bold">{label}</div>
-        </div>
+      <div className="text-sm text-center text-slate-700 font-bold">
+        {(name?.length ?? 0 > 50) ? name?.substring(0, 50) + "..." : name}
+      </div>
+      <div className="mt-2 text-xs text-slate-500 font-extralight overflow-ellipsis overflow-hidden max-h-full">
+        {content}
       </div>
       {hasChildren && (
         <Handle

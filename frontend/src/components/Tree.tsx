@@ -30,11 +30,8 @@ const nodeTypes: {
   audio: customNode,
 };
 
-const { nodes: layoutedNodes, edges: layoutedEdges } = layoutElements(
-  initialTree,
-  "1",
-  "LR"
-);
+const { nodes: layoutedNodes, edges: layoutedEdges } =
+  layoutElements(initialTree);
 
 // import { components } from "../openapi";
 // const fetchedNodes: components["schemas"]["Graph"]["nodes"] = [];
@@ -52,7 +49,6 @@ export const Tree: React.FC<TreeProps> = () => {
     (direction: "TB" | "LR") => {
       const { nodes: layoutedNodes, edges: layoutedEdges } = layoutElements(
         initialTree,
-        "1",
         direction
       );
 
@@ -80,7 +76,7 @@ export const Tree: React.FC<TreeProps> = () => {
           node.position.y +
             (node.measured?.height ? node.measured.height / 2 : 0),
           {
-            zoom: 1.5,
+            zoom: 1,
             duration: 1000,
           }
         );
@@ -101,7 +97,7 @@ export const Tree: React.FC<TreeProps> = () => {
         fitViewOptions={{
           padding: 0.1,
           duration: 1000,
-          nodes: [{ id: "1" }, { id: "2" }, { id: "3" }],
+          minZoom: 0.0001,
         }}
         nodeTypes={nodeTypes}
         panOnScroll
