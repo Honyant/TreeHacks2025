@@ -154,6 +154,10 @@ function App() {
           selectionMode={SelectionMode.Partial}
           proOptions={{ hideAttribution: true }}
           nodesDraggable={false}
+          onPaneClick={() => {
+            setSelectedNodes([]);
+            setSelectedNode(null);
+          }}
         >
           <MiniMap
             nodeStrokeWidth={3}
