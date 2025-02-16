@@ -4,7 +4,6 @@ from typing import Any, Dict, List
 from enum import Enum
 
 
-
 class ModelOutput(BaseModel):
     title: str
     content: str
@@ -12,12 +11,12 @@ class ModelOutput(BaseModel):
 
 class NodeType(str, Enum):  # to be displayed differently in the UI
     root = "root"
-    text = "text" # mode ii
-    question = "question" # mode i
-    email = "email" # mode i
-    call = "call" # mode i
-    file = "file" # mode i
-    search = "search" # mode i
+    text = "text"  # mode ii
+    question = "question"  # mode i
+    email = "email"  # mode i
+    call = "call"  # mode i
+    file = "file"  # mode i
+    search = "search"  # mode i
 
 
 class NodeMetadata(BaseModel):
@@ -32,43 +31,6 @@ class NodeV2(BaseModel):
     content: str
     metadata: NodeMetadata
     children: List[str]  # ids of the children nodes
-
-    model_config = {"from_attributes": True}
-
-
-# deprecate below.
-class NodeContent(BaseModel):
-    text: str
-    metadata: NodeMetadata
-
-
-class NodeBase(BaseModel):
-    node_class: str
-    title: str
-    content: NodeContent
-
-
-class NodeCreate(NodeBase):
-    pass
-
-
-class Node(NodeBase):
-    id: str
-
-    model_config = {"from_attributes": True}
-
-
-class EdgeBase(BaseModel):
-    from_node_id: str
-    to_node_id: str
-
-
-class EdgeCreate(EdgeBase):
-    pass
-
-
-class Edge(EdgeBase):
-    id: str
 
     model_config = {"from_attributes": True}
 
@@ -94,11 +56,17 @@ class ChatMessage(ChatMessageBase):
     model_config = {"from_attributes": True}
 
 
-class Graph(BaseModel):
-    nodes: List[NodeV2]
-    edges: List[Edge]
-
-
 class ChatMessageOut(BaseModel):
     chat_history: List[ChatMessage]
-    graph: Graph
+    graph: Dict[str, NodeV2]
+
+class FileUpload(BaseModel):
+    message: str
+    active_node_uuid: str
+    filename: str
+    content: str
+    mime_type: str
+    size: int  # file size in bytes
+
+class GeneratePayload(BaseModel):
+    active_node_uuid: str

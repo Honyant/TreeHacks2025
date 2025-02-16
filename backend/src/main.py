@@ -22,13 +22,13 @@ app.add_middleware(
 app.include_router(router)
 
 
-@app.on_event("startup")
-async def startup_event():
-    """Start the email checker in a separate thread when the FastAPI app starts"""
+# @app.on_event("startup")
+# async def startup_event():
+#     """Start the email checker in a separate thread when the FastAPI app starts"""
 
-    def run_email_checker():
-        check_for_replies()
+#     def run_email_checker():
+#         check_for_replies()
 
-    # Start the email checker in a separate thread
-    email_thread = threading.Thread(target=run_email_checker, daemon=True)
-    email_thread.start()
+#     # Start the email checker in a separate thread
+#     email_thread = threading.Thread(target=run_email_checker, daemon=True)
+#     email_thread.start()

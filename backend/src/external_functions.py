@@ -27,6 +27,11 @@ def query_perplexity(client: OpenAI, query: str) -> str:
     print(f"[Perplexity API] Response: {response.choices[0]}")
     return response.choices[0].message.content
 
+
+def call_phone_number(phone_number: str) -> str:
+    print(f"[Phone Call] Calling {phone_number}")
+    return f"Phone call to {phone_number} simulated."
+
 def send_email(to: str, subject: str, body: str) -> str:
     """
     Sends an email via SMTP using configuration details provided via environment variables.

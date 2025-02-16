@@ -6,25 +6,26 @@ from sqlalchemy.orm import Session
 import models
 import schemas
 from datetime import datetime
-from routes import get_db
+from database import SessionLocal
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 def load_brief(file_path: str) -> str:
     with open(file_path, 'r') as f:
         return f.read()
 
-def get_graph(db: Session = Depends(get_db)):
-    """
-    Returns the entire research graph (nodes and edges).
-    """
-    nodes = db.query(models.Node).all()
-    edges = db.query(models.Edge).all()
-    nodes_out = [schemas.Node.model_validate(n) for n in nodes]
-    edges_out = [schemas.Edge.model_validate(e) for e in edges]
-    
-    return {
-        "nodes": nodes_out,
-        "edges": edges_out,
-    }
+# def get_graph(db: Session = Depends(get_db)):
+#     """
+#     Returns the entire research graph (nodes and edges).
+#     """
+#     nodes = db.query(models.NodeV2).all()
+#     nodes_out = [schemas.NodeV2.model_validate(n) for n in nodes]
+#     return nodes_out
 
 def create_node(nodes: list[schemas.NodeV2], name: str, type: str, content: str, source: str, timestamp: datetime) -> str:
     """
@@ -53,6 +54,7 @@ def update_node_children(nodes: list[schemas.NodeV2], parent_id: str, child_id: 
 
 def get_node_by_id(nodes: list[schemas.NodeV2], node_id: str) -> schemas.NodeV2:
     for node in nodes:
+        print(node.id, node_id)
         if node.id == node_id:
             return node
     return None

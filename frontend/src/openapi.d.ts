@@ -4,6 +4,23 @@
  */
 
 export interface paths {
+    "/generate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Generate */
+        post: operations["generate_generate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/chat": {
         parameters: {
             query?: never;
@@ -13,14 +30,25 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /**
-         * Chat Endpoint
-         * @description Accepts a user message, updates the chat history,
-         *     processes the message via the internal engine, and returns:
-         *       - updated chat history
-         *       - entire research graph (nodes and edges)
-         */
+        /** Chat Endpoint */
         post: operations["chat_endpoint_chat_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Upload Endpoint */
+        post: operations["upload_endpoint_upload_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -58,6 +86,26 @@ export interface components {
             graph: {
                 [key: string]: components["schemas"]["NodeV2"];
             };
+        };
+        /** FileUpload */
+        FileUpload: {
+            /** Message */
+            message: string;
+            /** Active Node Uuid */
+            active_node_uuid: string;
+            /** Filename */
+            filename: string;
+            /** Content */
+            content: string;
+            /** Mime Type */
+            mime_type: string;
+            /** Size */
+            size: number;
+        };
+        /** GeneratePayload */
+        GeneratePayload: {
+            /** Active Node Uuid */
+            active_node_uuid: string;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -112,6 +160,39 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    generate_generate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GeneratePayload"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatMessageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     chat_endpoint_chat_post: {
         parameters: {
             query?: never;
@@ -122,6 +203,39 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["ChatMessageCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatMessageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    upload_endpoint_upload_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FileUpload"];
             };
         };
         responses: {

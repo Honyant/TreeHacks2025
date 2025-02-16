@@ -435,28 +435,28 @@ def send_email(to: str, subject: str, body: str) -> str:
         return f"Failed to send email: {e}"
 
 
-if __name__ == "__main__":
-    # Start the email listener in a background thread
-    from threading import Thread
+# if __name__ == "__main__":
+#     # Start the email listener in a background thread
+#     from threading import Thread
 
-    listener_thread = Thread(target=check_for_replies, daemon=True)
-    listener_thread.start()
+#     listener_thread = Thread(target=check_for_replies, daemon=True)
+#     listener_thread.start()
 
-    # Simulate sending an email via the engine
-    print("Sending test email through engine...")
-    email_result = send_email(
-        to=os.environ.get("TEST_EMAIL", "asstinbrown@gmail.com"),
-        subject="Engine Test Email",
-        body="This is a test email sent from the engine for asynchronous reply processing.",
-    )
-    print(email_result)
+#     # Simulate sending an email via the engine
+#     print("Sending test email through engine...")
+#     email_result = send_email(
+#         to=os.environ.get("TEST_EMAIL", "asstinbrown@gmail.com"),
+#         subject="Engine Test Email",
+#         body="This is a test email sent from the engine for asynchronous reply processing.",
+#     )
+#     print(email_result)
 
-    # Keep the main thread alive to allow asynchronous email checking
-    try:
-        while True:
-            time.sleep(5)
-    except KeyboardInterrupt:
-        print("Shutting down.")
+#     # Keep the main thread alive to allow asynchronous email checking
+#     try:
+#         while True:
+#             time.sleep(5)
+#     except KeyboardInterrupt:
+#         print("Shutting down.")
 
 
 def check_for_replies():
@@ -733,21 +733,21 @@ if __name__ == "__main__":
 #     },
 # ]
 
-if __name__ == "__main__":
-    queue = []
-    nodes = []
-    active_node = None
-    root_node_id = init_agent(nodes, active_node)
-    queue.append(root_node_id)
-    for i in range(5):
-        if queue:
-            active_node = queue.pop(0)
-            new_nodes = execute_mode_ii(nodes, active_node)
-            for node in new_nodes:
-                queue.append(node)
+# if __name__ == "__main__":
+#     queue = []
+#     nodes = []
+#     active_node = None
+#     root_node_id = init_agent(nodes, active_node)
+#     queue.append(root_node_id)
+#     for i in range(5):
+#         if queue:
+#             active_node = queue.pop(0)
+#             new_nodes = execute_mode_ii(nodes, active_node)
+#             for node in new_nodes:
+#                 queue.append(node)
     
-    print_nodes(nodes)
-    export_nodes(nodes, "nodes.json")
+#     print_nodes(nodes)
+#     export_nodes(nodes, "nodes.json")
 
 
 # tools = [
