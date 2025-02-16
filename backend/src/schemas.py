@@ -12,10 +12,12 @@ class ModelOutput(BaseModel):
 
 class NodeType(str, Enum):  # to be displayed differently in the UI
     root = "root"
-    text = "text"
-    image = "image"
-    audio = "audio"
-    link = "link"
+    text = "text" # mode ii
+    question = "question" # mode i
+    email = "email" # mode i
+    call = "call" # mode i
+    file = "file" # mode i
+    search = "search" # mode i
 
 
 class NodeMetadata(BaseModel):
