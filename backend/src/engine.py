@@ -7,15 +7,107 @@ import os
 
 from openai import OpenAI
 from external_functions import query_perplexity, send_email, video_analysis
+from utils import *
+import schemas
 
 load_dotenv()
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-perplexity_client = OpenAI(
-    api_key=os.getenv("PERPLEXITY_API_KEY"), base_url="https://api.perplexity.ai"
-)
+perplexity_client = OpenAI(api_key=os.getenv("PERPLEXITY_API_KEY"), base_url="https://api.perplexity.ai")
 
-# Engine using function calling
+
+def init_agent(nodes: list[schemas.NodeV2], active_node: str):
+    brief = load_brief("demo/brief.txt")
+    init_brief_prompt = """
+    You are helping create a root node for a research project. Given a project brief:
+    1. Generate a 5-word title that captures the key focus
+    2. Write a concise summary (max 200 words) that captures the essence of the investigation
+    Format the response as JSON with "title" and "content" fields.
+    """
+    
+    messages = [
+        {"role": "system", "content": init_brief_prompt},
+        {"role": "user", "content": f"Project brief:\n{brief}"}
+    ]
+    
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=messages,
+        response_format={"type": "json_object"}
+    )
+    
+    response_content = response.choices[0].message.content
+    parsed_response = schemas.ModelOutput.model_validate(json.loads(response_content))
+    
+    root_node_id = create_node(nodes, parsed_response.title, "root", parsed_response.content, "brief", datetime.now())
+    print(f"Root node created with id: {root_node_id}")
+    # print content
+    try:
+        root_node = get_node_by_id(nodes, root_node_id)
+    except Exception as e:
+        print(f"Error getting node by id: {e}")
+        root_node = None
+    print(f"node_content: {root_node.content}")
+    execute_mode_ii(nodes, root_node_id)
+    breakpoint()
+
+def execute_mode_ii(nodes: list[schemas.NodeV2], active_node: str):
+    """
+    Executes mode II of the research agent, which expands knowledge by analyzing 
+    the situation and generating new insights for the active node.
+    """
+    if not active_node:
+        print("No active node selected")
+        return
+
+    current_node = get_node_by_id(nodes, active_node)
+    if not current_node:
+        print(f"Could not find active node with id: {active_node}")
+        return
+
+    current_node_name = current_node.name
+    current_node_content = current_node.content
+
+    messages = [
+        {"role": "system", "content": mode_ii},
+        {"role": "user", "content": f"""
+
+         The current research node:
+         Title: {current_node_name}
+         Content: {current_node_content}
+
+         Generate relevant insights and create new nodes.
+"""}
+    ]
+
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=messages,
+        tools=mode_ii_tools,
+        temperature=0.7
+    )
+
+    message = response.choices[0].message
+    
+    if hasattr(message, "tool_calls") and message.tool_calls:
+        messages.append(message)
+        for tool_call in message.tool_calls:
+            if tool_call.function.name == "create_node":
+                args = json.loads(tool_call.function.arguments)
+                breakpoint()
+                child_id = create_node(
+                    nodes=nodes,
+                    name=args["name"],
+                    type=args["type"],
+                    content=args["content"],
+                    source="mode_ii",
+                    timestamp=datetime.now()
+                )
+                update_node_children(nodes, active_node, child_id)
+                print(f"Created new node: {args['name']}")
+    
+    print_nodes(nodes)
+    return
 
 
 def process_chat(user_message: str, chat_history: list) -> dict:
@@ -54,120 +146,6 @@ def process_chat(user_message: str, chat_history: list) -> dict:
         {"role": msg["role"], "content": msg["message"]} for msg in chat_history
     )
     messages.append({"role": "user", "content": user_message})
-
-    tools = [
-        {
-            "type": "function",
-            "function": {
-                "name": "send_email",
-                "description": "Send an email to a given recipient with a subject and message.",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "to": {
-                            "type": "string",
-                            "description": "The recipient email address.",
-                        },
-                        "subject": {
-                            "type": "string",
-                            "description": "The email subject line.",
-                        },
-                        "body": {
-                            "type": "string",
-                            "description": "The body of the email.",
-                        },
-                    },
-                    "required": ["to", "subject", "body"],
-                    "additionalProperties": False,
-                },
-                "strict": True,
-            },
-        },
-        {
-            "type": "function",
-            "function": {
-                "name": "query_perplexity",
-                "description": "Query the Perplexity API with a research query.",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "query": {
-                            "type": "string",
-                            "description": "The research query.",
-                        }
-                    },
-                    "required": ["query"],
-                    "additionalProperties": False,
-                },
-                "strict": True,
-            },
-        },
-        {
-            "type": "function",
-            "function": {
-                "name": "video_analysis",
-                "description": "Simulate video analysis steps for a provided video URL.",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "video_url": {
-                            "type": "string",
-                            "description": "The URL of the video to analyze.",
-                        }
-                    },
-                    "required": ["video_url"],
-                    "additionalProperties": False,
-                },
-                "strict": True,
-            },
-        },
-        {
-            "type": "function",
-            "function": {
-                "name": "create_node",
-                "description": "Create a new research node in the graph.",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "node_class": {
-                            "type": "string",
-                            "description": "The class of the node (e.g., heading, tweet, report, video).",
-                        },
-                        "text": {
-                            "type": "string",
-                            "description": "The content text for the node.",
-                        },
-                    },
-                    "required": ["node_class", "text"],
-                    "additionalProperties": False,
-                },
-                "strict": True,
-            },
-        },
-        {
-            "type": "function",
-            "function": {
-                "name": "create_edge",
-                "description": "Create an edge between two nodes in the graph.",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "from_id": {
-                            "type": "string",
-                            "description": "The source node id.",
-                        },
-                        "to_id": {
-                            "type": "string",
-                            "description": "The target node id.",
-                        },
-                    },
-                    "required": ["from_id", "to_id"],
-                    "additionalProperties": False,
-                },
-                "strict": True,
-            },
-        },
-    ]
 
     response = client.chat.completions.create(
         model="gpt-4o", messages=messages, tools=tools, temperature=0.7
@@ -294,3 +272,123 @@ def process_chat(user_message: str, chat_history: list) -> dict:
         "new_nodes": new_nodes,
         "new_edges": new_edges,
     }
+
+if __name__ == "__main__":
+    nodes = []
+    active_node = None
+    init_agent(nodes, active_node)
+
+
+# tools = [
+#     {
+#         "type": "function",
+#         "function": {
+#             "name": "send_email",
+#             "description": "Send an email to a given recipient with a subject and message.",
+#             "parameters": {
+#                 "type": "object",
+#                 "properties": {
+#                     "to": {
+#                         "type": "string",
+#                         "description": "The recipient email address.",
+#                     },
+#                     "subject": {
+#                         "type": "string",
+#                         "description": "The email subject line.",
+#                     },
+#                     "body": {
+#                         "type": "string",
+#                         "description": "The body of the email.",
+#                     },
+#                 },
+#                 "required": ["to", "subject", "body"],
+#                 "additionalProperties": False,
+#             },
+#             "strict": True,
+#         },
+#     },
+#     {
+#         "type": "function",
+#         "function": {
+#             "name": "query_perplexity",
+#             "description": "Query the Perplexity API with a research query.",
+#             "parameters": {
+#                 "type": "object",
+#                 "properties": {
+#                     "query": {
+#                         "type": "string",
+#                         "description": "The research query.",
+#                     }
+#                 },
+#                 "required": ["query"],
+#                 "additionalProperties": False,
+#             },
+#             "strict": True,
+#         },
+#     },
+#     {
+#         "type": "function",
+#         "function": {
+#             "name": "video_analysis",
+#             "description": "Simulate video analysis steps for a provided video URL.",
+#             "parameters": {
+#                 "type": "object",
+#                 "properties": {
+#                     "video_url": {
+#                         "type": "string",
+#                         "description": "The URL of the video to analyze.",
+#                     }
+#                 },
+#                 "required": ["video_url"],
+#                 "additionalProperties": False,
+#             },
+#             "strict": True,
+#         },
+#     },
+#     {
+#         "type": "function",
+#         "function": {
+#             "name": "create_node",
+#             "description": "Create a new research node in the graph.",
+#             "parameters": {
+#                 "type": "object",
+#                 "properties": {
+#                     "node_class": {
+#                         "type": "string",
+#                         "description": "The class of the node (e.g., heading, tweet, report, video).",
+#                     },
+#                     "text": {
+#                         "type": "string",
+#                         "description": "The content text for the node.",
+#                     },
+#                 },
+#                 "required": ["node_class", "text"],
+#                 "additionalProperties": False,
+#             },
+#             "strict": True,
+#         },
+#     },
+#     {
+#         "type": "function",
+#         "function": {
+#             "name": "create_edge",
+#             "description": "Create an edge between two nodes in the graph.",
+#             "parameters": {
+#                 "type": "object",
+#                 "properties": {
+#                     "from_id": {
+#                         "type": "string",
+#                         "description": "The source node id.",
+#                     },
+#                     "to_id": {
+#                         "type": "string",
+#                         "description": "The target node id.",
+#                     },
+#                 },
+#                 "required": ["from_id", "to_id"],
+#                 "additionalProperties": False,
+#             },
+#             "strict": True,
+#         },
+#     },
+# ]

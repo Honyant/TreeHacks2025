@@ -4,31 +4,8 @@ from sqlalchemy.orm import Session
 
 import models
 import schemas
-from database import get_db
-
-mode_i = """
-You are an investigative journalist's research agent.
-You are executing in mode 1, which means you are retrieving knowledge relevant to the nodes in the given context graph.
-You have access to the following functions:
-[search, retrieve, email]
-- search uses Perplexity to search the internet for relevant information
-- retrieve uses a retrieval-augmented generation workflow to retrieve information from proprietary data
-- email is used to send an email to a given recipient with a subject and message
-"""
-
-mode_ii = """
-You are an investigative journalist's research agent.
-You are executing in mode 2, which means you are expanding the knowledge domain by analyzing the situation and providing any combination of the following:
-1. a list of subtopics that are relevant to the given topic
-2. potential hypotheses that should be tested to further explore the given topic
-3. questions that need to be answered through online deep research
-4. questions that need to be answered through human interviews or alternative data collection methods
-
-You have access to the following functions:
-[create_node, create_edge]
-- create_node: to create a new node in the research graph
-- create_edge: to create a new edge between two nodes in the research graph
-"""
+from datetime import datetime
+from routes import get_db
 
 def load_brief(file_path: str) -> str:
     with open(file_path, 'r') as f:
@@ -48,28 +25,118 @@ def get_graph(db: Session = Depends(get_db)):
         "edges": edges_out,
     }
 
-def create_node(nodes: list[schemas.Node], node_class: str, content: dict) -> str:
+def create_node(nodes: list[schemas.NodeV2], name: str, type: str, content: str, source: str, timestamp: datetime) -> str:
     """
-    Create a new node in the research graph.
+    Create a new node in the research graph using NodeV2 schema.
     Returns the node ID.
     """
     node_id = str(uuid.uuid4())
-    nodes.append({
-        "id": node_id,
-        "node_class": node_class,
-        "content": content
-    })
+    nodes.append(schemas.NodeV2(
+        id=node_id,
+        name=name,
+        type=schemas.NodeType(type),
+        content=content,
+        metadata=schemas.NodeMetadata(
+            source=source,
+            timestamp=timestamp
+        ),
+        children=[]
+    ))
     return node_id
 
-def create_edge(edges: list[schemas.Edge], from_node_id: str, to_node_id: str) -> str:
-    """
-    Create a new edge between two nodes in the research graph.
-    Returns the edge ID.
-    """
-    edge_id = str(uuid.uuid4())
-    edges.append({
-        "id": edge_id,
-        "from": from_node_id,
-        "to": to_node_id
-    })
-    return edge_id
+def update_node_children(nodes: list[schemas.NodeV2], parent_id: str, child_id: str) -> None:
+    for node in nodes:
+        if node.id == parent_id:
+            node.children.append(child_id)
+            break
+
+def get_node_by_id(nodes: list[schemas.NodeV2], node_id: str) -> schemas.NodeV2:
+    for node in nodes:
+        if node.id == node_id:
+            return node
+    return None
+
+def print_nodes(nodes: list[schemas.NodeV2]) -> None:
+    for node in nodes:
+        print(f"\nTitle: {node.name}")
+        print(f"Content: {node.content}")
+
+
+mode_i = """
+You are an investigative journalist's research agent.
+You are executing in mode 1, which means you are retrieving knowledge relevant to the nodes in the given context graph.
+You have access to the following functions:
+[search, retrieve, email, call]
+- search uses Perplexity to search the internet for relevant information.
+- retrieve uses a retrieval-augmented generation workflow to retrieve information from proprietary data.
+- email is used to send an email to a given recipient with a subject and message.
+- call is used to call a given individual using a separate phone AI agent.
+"""
+
+mode_ii = """
+You are an investigative journalist's research agent.
+Your job is to expand the knowledge domain by analyzing the situation at the current node and generating new insights.
+Some potential insights you can generate are:
+1. a list of subtopics that are relevant to the given topic
+2. potential hypotheses that should be tested to further explore the given topic
+3. questions that need to be answered through online deep research
+4. questions that need to be answered through human interviews or alternative data collection methods
+
+Each node should be an individual topic without subtopics. Please separate subtopics into distinct nodes.
+
+You have access to the following functions:
+[create_node]
+- create_node: to create a new node in the research graph
+"""
+
+mode_ii_tools = [
+    {
+        "type": "function",
+        "function": {
+            "name": "create_node",
+            "description": "Create a new node in the research graph.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "Title of the node"
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": ["text", "image", "audio", "link"],
+                        "description": "Type of the node content"
+                    },
+                    "content": {
+                        "type": "string",
+                        "description": "The main content of the node"
+                    },
+                    "metadata": {
+                        "type": "object",
+                        "properties": {
+                            "source": {
+                                "type": "string",
+                                "description": "Source of the node content"
+                            },
+                            "timestamp": {
+                                "type": "string",
+                                "format": "date-time",
+                                "description": "Timestamp of when the node was created"
+                            }
+                        },
+                        "required": ["source", "timestamp"]
+                    },
+                    "children": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": "List of IDs of child nodes"
+                    }
+                },
+                "required": ["name", "type", "content", "metadata"],
+                "additionalProperties": False
+            }
+        }
+    }
+]
