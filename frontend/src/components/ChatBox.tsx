@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 
+import { queryClient } from "../api/client";
+
 
 export type Message = {
   role: "user" | "assistant";
@@ -14,20 +16,65 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ initialMessages = [] }) => {
   const [isOpen, setIsOpen] = useState(true);
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState("");
+  const [showFileUpload, setShowFileUpload] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const toggleChat = () => {
     setIsOpen((prev) => !prev);
   };
 
-  const handleSend = () => {
-    if (input.trim() !== "") {
-      setMessages((prev) => [
-        ...prev,
-        { role: "user", content: input.trim() },
-        { role: "assistant", content: "insert server message" },
-      ]);
-      setInput("");
+  const isInitiallyLoaded = () => {
+    return initialMessages.length > 0
+  }
+
+  const handleSend = async () => {
+    const trimmedInput = input.trim();
+    if (!trimmedInput) return;
+
+    // Optimistically add the user's message
+    setMessages((prev) => [...prev, { role: "user", content: trimmedInput }]);
+    setInput("");
+    try {
+      const { data } = queryClient.useQuery("post", "/chat", {
+        body: { role: "user", message: trimmedInput },
+        // staleTime: Infinity,
+        refetchOnWindowFocus: false,
+      });
+      if (data) {
+        const chatHistory = data.chat_history || ["", ""];
+        const assistantMessage = chatHistory[chatHistory.length - 1];
+
+        if (assistantMessage && assistantMessage.role === "assistant") {
+          setMessages((prev) => [
+            ...prev,
+            { role: "assistant", content: assistantMessage.message },
+          ]);
+        }
+      }
+    } catch (error) {
+      console.error("Error sending message:", error);
     }
+  };
+
+  const toggleFileUpload = () => {
+    setShowFileUpload((prev) => !prev);
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files.length > 0) {
+      setSelectedFile(event.target.files[0]);
+    }
+  };
+
+  const handleFileUpload = () => {
+    if (!selectedFile) {
+      console.log("No file selected");
+      return;
+    }
+    // send to backend
+    console.log("Uploading file:", selectedFile);
+    setSelectedFile(null);
+    setShowFileUpload(false);
   };
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
@@ -35,16 +82,27 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ initialMessages = [] }) => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+
   return (
-    <div className="card bg-base-100 w-96 shadow-xl fixed top-4 right-4 flex flex-col z-10">
+    <div className="card bg-base-100 w-96 shadow-xl fixed top-4 right-4 z-10 mb-4">
       <button onClick={toggleChat} className="btn btn-primary">
         {isOpen ? "Minimize Chat" : "Open Chat"}
       </button>
-      {isOpen && (
-        <div className="w-96 h-120 bg-base-content border rounded-lg shadow-lg flex flex-col my-2">
+      {!isInitiallyLoaded() && ( // edit
+        <div className="p-4 flex-1 overflow-y-auto bg-red-800 rounded-lg mt-4">
+          <h2> Unable to load chat.</h2>
+        </div>
+      )}
+      {isOpen && isInitiallyLoaded() && ( // edit
+        <div
+        className={`
+          w-96 h-96 bg-base-content border rounded-lg shadow-lg flex flex-col mt-4 right-4
+          transition-all duration-300
+          ${isOpen ? "opacity-100" : "opacity-0 pointer-events-none"}
+        `}>
           {/* header */}
-          <div className="p-4 border-b rounded-lg bg-base-300">
-            <h2 className="text-lg font-semibold">Chat</h2>
+          <div className="p-4 border-b rounded-lg bg-base-300 gap-2 px-2">
+            <h2 className="text-lg font-semibold pl-2">Chat</h2>
           </div>
 
           {/* chat messages */}
@@ -76,18 +134,42 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ initialMessages = [] }) => {
           </div>
 
           {/* input box */}
-          <div className="input-bordered rounded-full">
-            <input type="file" className="file-input w-full rounded-lg" />
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleSend();
-              }}
-              placeholder="Type your message..."
-              className="w-full input rounded-lg"
-            />
+          <div className="input-bordered rounded-full py-2 top-2 flex flex-col gap-2 px-2">
+            {showFileUpload && (
+              <div className="flex items-center gap-2">
+                <input
+                  type="file"
+                  className="file-input w-full rounded-lg"
+                  onChange={handleFileChange}
+                />
+                <button
+                  type="button"
+                  className="btn btn-primary rounded-lg"
+                  onClick={handleFileUpload}
+                >
+                  Upload
+                </button>
+              </div>
+            )}
+            <div className="relative w-full">
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSend();
+                }}
+                placeholder="Type your message..."
+                className="w-full input rounded-lg pr-10"
+              />
+              <button
+                type="button"
+                onClick={toggleFileUpload}
+                className="btn btn-primary btn-circle btn-sm text-xl absolute inset-y-0 my-auto right-2 no-animation"
+              >
+                +
+              </button>
+            </div>
           </div>
         </div>
       )}
