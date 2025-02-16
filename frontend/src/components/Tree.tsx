@@ -1,4 +1,7 @@
+import { useCallback } from "react";
 import {
+  ConnectionLineType,
+  Panel,
   ReactFlow,
   SelectionMode,
   useEdgesState,
@@ -6,14 +9,22 @@ import {
 } from "@xyflow/react";
 
 import { queryClient } from "../api/client";
+import {
+  CustomNode,
+  customNode,
+  initialTree,
+  layoutElements,
+} from "../utils/tree";
 
-import "@xyflow/react/dist/style.css";
+const nodeTypes = {
+  custom: customNode,
+};
 
-const initialNodes = [
-  { id: "1", position: { x: 0, y: 0 }, data: { label: "1" } },
-  { id: "2", position: { x: 0, y: 100 }, data: { label: "2" } },
-];
-const initialEdges = [{ id: "e1-2", source: "1", target: "2" }];
+const { nodes: layoutedNodes, edges: layoutedEdges } = layoutElements(
+  initialTree,
+  "1",
+  "LR"
+);
 
 // import { components } from "../openapi";
 // const fetchedNodes: components["schemas"]["Graph"]["nodes"] = [];
@@ -29,8 +40,23 @@ export const Tree: React.FC<TreeProps> = ({ children }) => {
     body: { role: "user", message: "Hello, world!" },
   });
 
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const [nodes, setNodes, onNodesChange] =
+    useNodesState<CustomNode>(layoutedNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(layoutedEdges);
+
+  const onLayout = useCallback(
+    (direction: "TB" | "LR") => {
+      const { nodes: layoutedNodes, edges: layoutedEdges } = layoutElements(
+        initialTree,
+        "1",
+        direction
+      );
+
+      setNodes([...layoutedNodes]);
+      setEdges([...layoutedEdges]);
+    },
+    [setNodes, setEdges]
+  );
 
   return (
     <div style={{ width: "100vw", height: "100vh" }}>
@@ -39,11 +65,19 @@ export const Tree: React.FC<TreeProps> = ({ children }) => {
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
+        connectionLineType={ConnectionLineType.SmoothStep}
+        fitView
+        nodeTypes={nodeTypes}
         panOnScroll
         selectionOnDrag
         panOnDrag={panOnDrag}
         selectionMode={SelectionMode.Partial}
-      />
+      >
+        <Panel position="top-right">
+          <button onClick={() => onLayout("TB")}>vertical layout</button>
+          <button onClick={() => onLayout("LR")}>horizontal layout</button>
+        </Panel>
+      </ReactFlow>
     </div>
   );
 };
