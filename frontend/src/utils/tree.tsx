@@ -6,7 +6,7 @@ import { twMerge } from "tailwind-merge";
 
 import { components } from "../openapi";
 
-interface Tree {
+interface RawTree {
   [k: string]: Partial<components["schemas"]["Graph"]["nodes"][number]>;
 }
 
@@ -30,7 +30,7 @@ const nodeClassNames: {
   audio: "bg-red-100",
 };
 
-export const initialTree: Tree = {
+export const initialTree: RawTree = {
   1: {
     id: "1",
     name: "root",
@@ -137,8 +137,6 @@ export const layoutElements = (
     const newNode: CustomNode = {
       data: { name: node.name, direction, isRoot: node.id === rootId, ...node },
       id: node.id ?? "",
-      width: nodeWidth,
-      height: nodeHeight,
       position: {
         x: node.x,
         y: node.y,

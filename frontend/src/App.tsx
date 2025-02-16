@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { ReactFlowProvider } from "@xyflow/react";
 
 import { queryClient } from "./api/client";
 import { ChatBox } from "./components/ChatBox";
@@ -10,12 +11,13 @@ function App() {
   });
 
   const initialMessages = useMemo(() => {
-    return (data)?.chat_history.map((msg) => ({
-      role: msg.role,
-      content: msg.message,
-    })) || [];
+    return (
+      data?.chat_history.map((msg) => ({
+        role: msg.role,
+        content: msg.message,
+      })) || []
+    );
   }, [data]);
-
 
   return (
     <>
@@ -23,10 +25,12 @@ function App() {
         <h1 className="text-3xl font-bold">Chat Application</h1>
         {isPending && <div>Loading chat history...</div>}
         {error && <div>Error: {JSON.stringify(error)}</div>}
-        {!isPending && !error && (<ChatBox initialMessages={initialMessages} />)}
+        {!isPending && !error && <ChatBox initialMessages={initialMessages} />}
         {/* <ChatBox initialMessages={[]}/> */}
       </div>
-      <Tree />
+      <ReactFlowProvider>
+        <Tree />
+      </ReactFlowProvider>
     </>
   );
 }

@@ -1,12 +1,14 @@
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ConnectionLineType,
   NodeProps,
+  OnSelectionChangeFunc,
   Panel,
   ReactFlow,
   SelectionMode,
   useEdgesState,
   useNodesState,
+  useReactFlow,
 } from "@xyflow/react";
 
 import { components } from "../openapi";
@@ -60,6 +62,32 @@ export const Tree: React.FC<TreeProps> = () => {
     [setNodes, setEdges]
   );
 
+  const [selectedNodes, setSelectedNodes] = useState<string[]>([]);
+
+  const onChange: OnSelectionChangeFunc = useCallback(({ nodes }) => {
+    setSelectedNodes(nodes.map((node) => node.id));
+  }, []);
+
+  const { setCenter } = useReactFlow();
+
+  useEffect(() => {
+    if (selectedNodes.length === 1) {
+      const node = nodes.find((node) => node.id === selectedNodes[0]);
+      if (node) {
+        setCenter(
+          node.position.x +
+            (node.measured?.width ? node.measured.width / 2 : 0),
+          node.position.y +
+            (node.measured?.height ? node.measured.height / 2 : 0),
+          {
+            zoom: 1.5,
+            duration: 1000,
+          }
+        );
+      }
+    }
+  }, [nodes, selectedNodes, setCenter]);
+
   return (
     <div style={{ width: "100vw", height: "90vh" }}>
       <ReactFlow
@@ -67,12 +95,13 @@ export const Tree: React.FC<TreeProps> = () => {
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
+        onSelectionChange={onChange}
         connectionLineType={ConnectionLineType.SmoothStep}
         fitView
         fitViewOptions={{
           padding: 0.1,
           duration: 1000,
-          nodes: [{ id: "1" }, { id: "2" }, { id: "10" }],
+          nodes: [{ id: "1" }, { id: "2" }, { id: "3" }],
         }}
         nodeTypes={nodeTypes}
         panOnScroll
@@ -80,6 +109,7 @@ export const Tree: React.FC<TreeProps> = () => {
         panOnDrag={panOnDrag}
         selectionMode={SelectionMode.Partial}
         proOptions={{ hideAttribution: true }}
+        nodesDraggable={false}
       >
         <Panel position="top-right">
           <button onClick={() => onLayout("TB")}>vertical layout</button>
