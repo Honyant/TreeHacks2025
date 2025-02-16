@@ -2,18 +2,10 @@ import { memo } from "react";
 import { type Edge, type Node, type NodeProps, Position } from "@xyflow/react";
 import { Handle } from "@xyflow/react";
 import { layoutFromMap } from "entitree-flex";
+import { components } from "../openapi";
 
 interface Tree {
-  [k: string]: {
-    id: string;
-    name: string;
-    type?: "input" | "default" | "output";
-    children?: string[];
-    siblings?: string[];
-    spouses?: string[];
-    isSpouse?: boolean;
-    isSibling?: boolean;
-  };
+  [k: string]: components["schemas"][];
 }
 
 export const initialTree: Tree = {

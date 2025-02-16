@@ -2,8 +2,10 @@ from datetime import datetime
 from pydantic import BaseModel
 from typing import Any, Dict, List
 
+from enum import Enum
 
-class NodeType(str, Enum): # to be displayed differently in the UI
+
+class NodeType(str, Enum):  # to be displayed differently in the UI
     text = "text"
     image = "image"
     audio = "audio"
@@ -17,11 +19,11 @@ class NodeMetadata(BaseModel):
 
 class NodeV2(BaseModel):
     id: str
-    name: str # title of the node
-    type: NodeType # type of the node
+    name: str  # title of the node
+    type: NodeType  # type of the node
     content: str
     metadata: NodeMetadata
-    children: List[str] # ids of the children nodes
+    children: List[str]  # ids of the children nodes
 
 
 # deprecate below.
@@ -59,9 +61,6 @@ class Edge(EdgeBase):
     id: str
 
     model_config = {"from_attributes": True}
-
-
-from enum import Enum
 
 
 class RoleEnum(str, Enum):
