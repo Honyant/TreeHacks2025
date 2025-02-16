@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useShallow } from "zustand/shallow";
 
 import { queryClient } from "../api/client";
 import { useStore } from "../store";
@@ -13,7 +14,12 @@ interface ChatBoxProps {
 }
 
 export const ChatBox: React.FC<ChatBoxProps> = ({ initialMessages = [] }) => {
-  const setGlobalLoading = useStore((state) => state.setGlobalLoading);
+  const { setGlobalLoading, selectedNodeId } = useStore(
+    useShallow((state) => ({
+      selectedNodeId: state.selectedNodeId,
+      setGlobalLoading: state.setGlobalLoading,
+    }))
+  );
 
   const [isOpen, setIsOpen] = useState(true);
   const [messages, setMessages] = useState<Message[]>(initialMessages);
@@ -43,7 +49,11 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ initialMessages = [] }) => {
         "post",
         "/chat",
         {
-          body: { role: "user", message: trimmedInput },
+          body: {
+            role: "user",
+            message: trimmedInput,
+            node_id: selectedNodeId!,
+          },
           refetchOnWindowFocus: false,
         }
       );
@@ -90,32 +100,30 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ initialMessages = [] }) => {
   };
 
   return (
-    <div className="card bg-base-100 w-96 shadow-xl fixed top-4 right-4 z-10 mb-4">
-      <button onClick={toggleChat} className="btn btn-primary">
-        {isOpen ? "Minimize Chat" : "Open Chat"}
-      </button>
-
-      {!hasInitialMessages() && (
-        <div className="p-4 flex-1 overflow-y-auto bg-red-800 rounded-lg mt-4">
-          <h2>Unable to load chat.</h2>
-        </div>
-      )}
-
+    <div className="card w-96 shadow-xl fixed bottom-4 right-4 z-10 mb-4">
       {isOpen && (
         <div
           className={`
-            w-96 h-96 bg-base-content border rounded-lg shadow-lg flex flex-col mt-4 right-4
-            transition-all duration-300
+            w-96 h-96 bg-base-content border rounded-lg shadow-lg flex flex-col
+            transition-all duration-300 bg-gray-100
             ${isOpen ? "opacity-100" : "opacity-0 pointer-events-none"}
           `}
         >
           {/* header */}
-          <div className="p-4 border-b rounded-lg bg-base-300 gap-2 px-2">
-            <h2 className="text-lg font-semibold pl-2">Chat</h2>
+          <div className="p-4 border-b rounded-t-lg bg-base-content px-2">
+            <h2 className="text-2xl font-bold pl-2 text-black">Chat</h2>
+            <hr className="h-px w-1/2 justify-center m-1 border-0 bg-black"></hr>
           </div>
 
+          {!hasInitialMessages() && (
+            <div className="p-2 text-center rounded-lg m-2 bg-red-200 mx-4">
+              <h2 className="text-red-800 text-xl font-bold">
+                Unable to load chat.
+              </h2>
+            </div>
+          )}
           {/* chat messages */}
-          <div className="p-4 flex-1 overflow-y-auto bg-base-content rounded-lg">
+          <div className={`p-4 flex-1 overflow-y-auto rounded-lg`}>
             {messages.length === 0 ? (
               <p className="text-gray-500 text-sm">No messages yet...</p>
             ) : (
@@ -127,10 +135,10 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ initialMessages = [] }) => {
                     className={`mb-2 flex ${isUser ? "justify-end" : "justify-start"}`}
                   >
                     <div
-                      className={`inline-block text-sm px-4 py-2 rounded-lg text-wrap break-words max-w-[80%] ${
+                      className={`inline-block text-sm px-4 py-2 rounded-lg text-wrap break-words max-w-[80%] text-black ${
                         isUser
-                          ? "chat chat-end chat-bubble text-right" // user
-                          : "chat chat-start chat-bubble text-left" // assistant
+                          ? "chat chat-end chat-bubble text-right bg-blue-200" // user
+                          : "chat chat-start chat-bubble text-left bg-green-200" // assistant
                       }`}
                     >
                       {msg.content}
@@ -148,12 +156,12 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ initialMessages = [] }) => {
               <div className="flex items-center gap-2">
                 <input
                   type="file"
-                  className="file-input w-full rounded-lg"
+                  className="file-input file-input-bordered file-input-neutral w-full rounded-lg text-black text-bold bg-base-content"
                   onChange={handleFileChange}
                 />
                 <button
                   type="button"
-                  className="btn btn-primary rounded-lg"
+                  className="btn bg-blue-200 text-black rounded-lg"
                   onClick={handleFileUpload}
                 >
                   Upload
@@ -171,12 +179,12 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ initialMessages = [] }) => {
                   }
                 }}
                 placeholder="Type your message..."
-                className="w-full input rounded-lg pr-10"
+                className="w-full input rounded-lg pr-10 bg-base-content text-black border-2 border-black"
               />
               <button
                 type="button"
                 onClick={toggleFileUpload}
-                className="btn btn-primary btn-circle btn-sm text-xl absolute inset-y-0 my-auto right-2 no-animation"
+                className="btn btn-circle btn-sm bg-blue-200 text-black text-2xl text-bold absolute inset-y-0 my-auto right-2 no-animation"
               >
                 +
               </button>
@@ -184,6 +192,9 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ initialMessages = [] }) => {
           </div>
         </div>
       )}
+      <button onClick={toggleChat} className="btn mt-4 bg-blue-200 text-black">
+        {isOpen ? "Minimize Chat" : "Open Chat"}
+      </button>
     </div>
   );
 };

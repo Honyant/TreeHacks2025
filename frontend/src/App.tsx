@@ -11,9 +11,11 @@ import {
   useNodesState,
   useReactFlow,
 } from "@xyflow/react";
+import { useShallow } from "zustand/shallow";
 
 import { queryClient } from "./api/client";
 import { ChatBox } from "./components/ChatBox";
+import { ExpandBox } from "./components/ExpandBox";
 import {
   CustomNode,
   customNode,
@@ -48,10 +50,15 @@ const panOnDrag = [1, 2];
 
 function App() {
   const { data, error, isPending } = queryClient.useQuery("post", "/chat", {
-    body: { role: "user", message: "Hello, world!" },
+    body: { role: "user", message: "Hello, world!", node_id: "0" },
   });
 
-  const globalLoading = useStore((state) => state.globalLoading);
+  const { globalLoading, setSelectedNodeId } = useStore(
+    useShallow((state) => ({
+      globalLoading: state.globalLoading,
+      setSelectedNodeId: state.setSelectedNodeId,
+    }))
+  );
 
   const initialMessages = useMemo(() => {
     return (
@@ -81,11 +88,20 @@ function App() {
 
   const [selectedNodes, setSelectedNodes] = useState<string[]>([]);
 
-  const onChange: OnSelectionChangeFunc = useCallback(({ nodes }) => {
-    setSelectedNodes(nodes.map((node) => node.id));
-  }, []);
+  const onChange: OnSelectionChangeFunc = useCallback(
+    ({ nodes }) => {
+      setSelectedNodes(nodes.map((node) => node.id));
+      if (nodes.length === 1) {
+        setSelectedNodeId(nodes[0].id);
+      } else if (nodes.length === 0) {
+        setSelectedNodeId(null);
+      }
+    },
+    [setSelectedNodeId]
+  );
 
   const { setCenter } = useReactFlow();
+  const [selectedNode, setSelectedNode] = useState<CustomNode | null>(null);
 
   const fitViewNodes = useMemo(() => {
     const root = nodes.find((node) => node.data.isRoot);
@@ -99,6 +115,7 @@ function App() {
     if (selectedNodes.length === 1) {
       const node = nodes.find((node) => node.id === selectedNodes[0]);
       if (node) {
+        setSelectedNode(node);
         setCenter(
           node.position.x +
             (node.measured?.width ? node.measured.width / 2 : 0),
@@ -109,6 +126,8 @@ function App() {
             duration: 1000,
           }
         );
+      } else {
+        setSelectedNode(null);
       }
     }
   }, [nodes, selectedNodes, setCenter]);
@@ -118,10 +137,11 @@ function App() {
       <div className="max-h-[10vh] min-h-[10vh]">
         {isPending ? (
           <div>Loading chat history...</div>
-        ) : error ? (
-          <div>Error: {JSON.stringify(error)}</div>
-        ) : (
+        ) : selectedNode ? (
           <ChatBox initialMessages={initialMessages} />
+        ) : null}
+        {selectedNode && (
+          <ExpandBox node={selectedNode as unknown as CustomNode} />
         )}
         {globalLoading && <div>Loading...</div>}
       </div>
@@ -148,6 +168,10 @@ function App() {
           selectionMode={SelectionMode.Partial}
           proOptions={{ hideAttribution: true }}
           nodesDraggable={false}
+          onPaneClick={() => {
+            setSelectedNodes([]);
+            setSelectedNode(null);
+          }}
         >
           <MiniMap
             nodeStrokeWidth={3}

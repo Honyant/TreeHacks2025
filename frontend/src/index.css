@@ -1,3 +1,12 @@
 @import "@xyflow/react/dist/style.css";
 @import "tailwindcss";
 @plugin "daisyui";
+
+@keyframes svgAnimation {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: 1000;
+  }
+}
