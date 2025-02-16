@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import { useCallback, useEffect, useState } from "react";
-import { ReactFlowProvider } from "@xyflow/react";
 import {
   ConnectionLineType,
   NodeProps,
@@ -112,36 +111,34 @@ function App() {
         )}
       </div>
 
-      <ReactFlowProvider>
-        <div style={{ width: "100vw", height: "90vh" }}>
-          <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onSelectionChange={onChange}
-            connectionLineType={ConnectionLineType.SmoothStep}
-            fitView
-            fitViewOptions={{
-              padding: 0.1,
-              duration: 1000,
-              minZoom: 0.0001,
-            }}
-            nodeTypes={nodeTypes}
-            panOnScroll
-            selectionOnDrag
-            panOnDrag={panOnDrag}
-            selectionMode={SelectionMode.Partial}
-            proOptions={{ hideAttribution: true }}
-            nodesDraggable={false}
-          >
-            <Panel position="top-right">
-              <button onClick={() => onLayout("TB")}>vertical layout</button>
-              <button onClick={() => onLayout("LR")}>horizontal layout</button>
-            </Panel>
-          </ReactFlow>
-        </div>
-      </ReactFlowProvider>
+      <div style={{ width: "100vw", height: "90vh" }}>
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onSelectionChange={onChange}
+          connectionLineType={ConnectionLineType.SmoothStep}
+          fitView
+          fitViewOptions={{
+            padding: 0.1,
+            duration: 1000,
+            minZoom: 0.0001,
+          }}
+          nodeTypes={nodeTypes}
+          panOnScroll
+          selectionOnDrag
+          panOnDrag={panOnDrag}
+          selectionMode={SelectionMode.Partial}
+          proOptions={{ hideAttribution: true }}
+          nodesDraggable={false}
+        >
+          <Panel position="top-right">
+            <button onClick={() => onLayout("TB")}>vertical layout</button>
+            <button onClick={() => onLayout("LR")}>horizontal layout</button>
+          </Panel>
+        </ReactFlow>
+      </div>
     </>
   );
 }
