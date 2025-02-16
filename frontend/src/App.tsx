@@ -49,8 +49,8 @@ const { nodes: layoutedNodes, edges: layoutedEdges } =
 const panOnDrag = [1, 2];
 
 function App() {
-  const { data, error, isPending } = queryClient.useQuery("post", "/chat", {
-    body: { role: "user", message: "Hello, world!", node_id: "0" },
+  const { data, error, isPending } = queryClient.useQuery("post", "/start", {
+    body: {},
   });
 
   const { globalLoading, setSelectedNodeId } = useStore(
