@@ -59,15 +59,17 @@ def chat_endpoint(payload: schemas.ChatMessageCreate):
     global chat_messages
     message = payload.message
     role = payload.role
-    node_id = payload.node_id
+    id = payload.node_id
 
     # if the node is a question, we modify the question node and add on the response from the user:
     chat_messages.append(schemas.ChatMessage(
-        message=message,
+        id=str(uuid.uuid4()),
         role=role,
-        node_id=node_id
+        node_id=id,
+        message=message,
+        timestamp=datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
     ))
-    found_node = get_node_by_id(nodes, node_id)
+    found_node = get_node_by_id(nodes, id)
     if found_node and found_node.type == "question":
         found_node.content = message
 
