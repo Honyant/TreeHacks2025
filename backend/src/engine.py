@@ -1,12 +1,19 @@
 import uuid
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from dotenv import load_dotenv
 import os
+import imaplib
+import email
+from email.header import decode_header
+import time
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 from openai import OpenAI
-from external_functions import query_perplexity, send_email, video_analysis
+from external_functions import query_perplexity, video_analysis
 from utils import *
 import schemas
 
@@ -221,7 +228,9 @@ def process_chat(user_message: str, chat_history: list) -> dict:
                 result = video_analysis(args.get("video_url", ""))
 
             elif function_name == "create_node":
-                print(f"Creating node '{args.get('node_class')}' with text: {args.get('text')}")
+                print(
+                    f"Creating node '{args.get('node_class')}' with text: {args.get('text')}"
+                )
                 node_class = args.get("node_class")
                 text = args.get("text")
                 node = {
@@ -239,7 +248,9 @@ def process_chat(user_message: str, chat_history: list) -> dict:
                 result = f"Node '{node_class}' created."
 
             elif function_name == "create_edge":
-                print(f"Creating edge from {args.get('from_id')} to {args.get('to_id')}")
+                print(
+                    f"Creating edge from {args.get('from_id')} to {args.get('to_id')}"
+                )
                 from_id = args.get("from_id")
                 to_id = args.get("to_id")
                 edge = {
@@ -285,6 +296,436 @@ def process_chat(user_message: str, chat_history: list) -> dict:
         "new_nodes": new_nodes,
         "new_edges": new_edges,
     }
+
+
+def check_for_replies():
+    """
+    Periodically checks for new emails from the last 2 minutes, then processes replies.
+    """
+    # Connect to the email server
+    mail = imaplib.IMAP4_SSL("imap.gmail.com")
+    mail.login(os.getenv("SMTP_USER"), os.getenv("SMTP_PASSWORD"))
+
+    # Select the mailbox you want to check
+    mail.select("inbox")
+
+    while True:
+        print("Checking for new emails...")
+        # Calculate the time 2 minutes ago, ensuring it's timezone-aware (UTC)
+        two_minutes_ago = datetime.now(timezone.utc) - timedelta(minutes=2)
+        # Format the date for the IMAP search (day-based only)
+        yesterday = datetime.now(timezone.utc) - timedelta(days=1)
+        date_str = yesterday.strftime("%d-%b-%Y")
+
+        # Search for emails "since" that day (IMAP is day-based, so we still need to manually filter times below)
+        status, messages = mail.search(None, f'(SINCE "{date_str}")')
+        if status != "OK":
+            logging.warning("IMAP search failed or returned no messages.")
+            time.sleep(10)
+            continue
+
+        email_ids = messages[0].split()
+        if not email_ids:
+            logging.info("No new emails found in the last 2 minutes (day-based check).")
+            time.sleep(10)
+            continue
+
+        print(f"Found {len(email_ids)} new emails.")
+
+        for email_id in email_ids:
+            # Fetch the email by ID
+            fetch_status, msg_data = mail.fetch(email_id, "(RFC822)")
+            if fetch_status != "OK":
+                logging.warning(f"Error fetching email with ID: {email_id}")
+                continue
+
+            for response_part in msg_data:
+                if isinstance(response_part, tuple):
+                    msg = email.message_from_bytes(response_part[1])
+                    # Get the email date
+                    email_date = email.utils.parsedate_to_datetime(msg["Date"])
+
+                    # Convert email_date to UTC for consistent comparison.
+                    if email_date.tzinfo is None:
+                        email_date = email_date.replace(tzinfo=timezone.utc)
+                    else:
+                        email_date = email_date.astimezone(timezone.utc)
+
+                    print(f"Email date: {email_date}")
+                    print(f"Two minutes ago: {two_minutes_ago}")
+                    if email_date > two_minutes_ago:
+                        subject, encoding = decode_header(msg["Subject"])[0]
+                        if isinstance(subject, bytes):
+                            subject = subject.decode(encoding if encoding else "utf-8")
+
+                        # Check if the email is a reply using multiple criteria
+                        is_reply = "In-Reply-To" in msg or "References" in msg
+                        is_reply = is_reply or subject.lower().startswith("re:")
+
+                        if is_reply:
+                            print(f"Subject: {subject}")
+                            logging.info(f"New reply detected. Subject: {subject}")
+                            process_reply(msg)
+
+        # Wait for a while before checking again
+        time.sleep(10)
+
+
+def process_reply(msg):
+    """
+    Process the reply by extracting its content and updating the relevant node.
+    """
+    # Extract the email content
+    body = ""
+    if msg.is_multipart():
+        for part in msg.walk():
+            content_type = part.get_content_type()
+            if content_type == "text/plain":
+                body = part.get_payload(decode=True).decode(errors="replace")
+                break
+    else:
+        body = msg.get_payload(decode=True).decode(errors="replace")
+
+    logging.info(f"Reply received: {body}")
+    # Update your node with the reply content
+    # Example: store_reply_in_node(body)
+    # (Implement your own logic here as needed.)
+
+
+def send_email(to: str, subject: str, body: str) -> str:
+    """
+    Sends an email via SMTP using configuration details provided via environment variables.
+
+    Environment Variables:
+      - SMTP_HOST: SMTP server address (default: smtp.gmail.com)
+      - SMTP_PORT: SMTP server port (default: 587)
+      - SMTP_USER: SMTP username/email (default: your-email@gmail.com)
+      - SMTP_PASSWORD: SMTP password (App Password for Gmail)
+    """
+    # Load SMTP configuration from environment variables.
+    smtp_host = os.environ.get("SMTP_HOST", "smtp.gmail.com")
+    smtp_port = int(os.environ.get("SMTP_PORT", 587))
+    smtp_user = os.environ.get("SMTP_USER", "your-email@gmail.com")
+    smtp_password = os.environ.get("SMTP_PASSWORD", "your-app-password")
+
+    # Create the email message.
+    msg = MIMEMultipart()
+    msg["From"] = smtp_user
+    msg["To"] = to
+    msg["Subject"] = subject
+    msg.attach(MIMEText(body, "plain"))
+
+    try:
+        # Connect to the SMTP server, start TLS, login, and send the email.
+        server = smtplib.SMTP(smtp_host, smtp_port)
+        server.starttls()
+        server.login(smtp_user, smtp_password)
+        server.sendmail(smtp_user, to, msg.as_string())
+        server.quit()
+        print(f"[Email] Sent email to {to} with subject '{subject}'.")
+        return "Email sent."
+    except Exception as e:
+        print(f"[Email] Error sending email: {e}")
+        return f"Failed to send email: {e}"
+
+
+if __name__ == "__main__":
+    # Start the email listener in a background thread
+    from threading import Thread
+
+    listener_thread = Thread(target=check_for_replies, daemon=True)
+    listener_thread.start()
+
+    # Simulate sending an email via the engine
+    print("Sending test email through engine...")
+    email_result = send_email(
+        to=os.environ.get("TEST_EMAIL", "asstinbrown@gmail.com"),
+        subject="Engine Test Email",
+        body="This is a test email sent from the engine for asynchronous reply processing.",
+    )
+    print(email_result)
+
+    # Keep the main thread alive to allow asynchronous email checking
+    try:
+        while True:
+            time.sleep(5)
+    except KeyboardInterrupt:
+        print("Shutting down.")
+
+
+def check_for_replies():
+    """
+    Periodically checks for new emails from the last 2 minutes, then processes replies.
+    """
+    # Connect to the email server
+    mail = imaplib.IMAP4_SSL("imap.gmail.com")
+    mail.login(os.getenv("SMTP_USER"), os.getenv("SMTP_PASSWORD"))
+
+    # Select the mailbox you want to check
+    mail.select("inbox")
+
+    while True:
+        print("Checking for new emails...")
+        # Calculate the time 2 minutes ago, ensuring it's timezone-aware (UTC)
+        two_minutes_ago = datetime.now(timezone.utc) - timedelta(minutes=2)
+        # Format the date for the IMAP search (day-based only)
+        yesterday = datetime.now(timezone.utc) - timedelta(days=1)
+        date_str = yesterday.strftime("%d-%b-%Y")
+
+        # Search for emails "since" that day (IMAP is day-based, so we still need to manually filter times below)
+        status, messages = mail.search(None, f'(SINCE "{date_str}")')
+        if status != "OK":
+            logging.warning("IMAP search failed or returned no messages.")
+            time.sleep(10)
+            continue
+
+        email_ids = messages[0].split()
+        if not email_ids:
+            logging.info("No new emails found in the last 2 minutes (day-based check).")
+            time.sleep(10)
+            continue
+
+        print(f"Found {len(email_ids)} new emails.")
+
+        for email_id in email_ids:
+            # Fetch the email by ID
+            fetch_status, msg_data = mail.fetch(email_id, "(RFC822)")
+            if fetch_status != "OK":
+                logging.warning(f"Error fetching email with ID: {email_id}")
+                continue
+
+            for response_part in msg_data:
+                if isinstance(response_part, tuple):
+                    msg = email.message_from_bytes(response_part[1])
+                    # Get the email date
+                    email_date = email.utils.parsedate_to_datetime(msg["Date"])
+
+                    # Convert email_date to UTC for consistent comparison.
+                    if email_date.tzinfo is None:
+                        email_date = email_date.replace(tzinfo=timezone.utc)
+                    else:
+                        email_date = email_date.astimezone(timezone.utc)
+
+                    print(f"Email date: {email_date}")
+                    print(f"Two minutes ago: {two_minutes_ago}")
+                    if email_date > two_minutes_ago:
+                        subject, encoding = decode_header(msg["Subject"])[0]
+                        if isinstance(subject, bytes):
+                            subject = subject.decode(encoding if encoding else "utf-8")
+
+                        # Check if the email is a reply using multiple criteria
+                        is_reply = "In-Reply-To" in msg or "References" in msg
+                        is_reply = is_reply or subject.lower().startswith("re:")
+
+                        if is_reply:
+                            print(f"Subject: {subject}")
+                            logging.info(f"New reply detected. Subject: {subject}")
+                            process_reply(msg)
+
+        # Wait for a while before checking again
+        time.sleep(10)
+
+
+def process_reply(msg):
+    """
+    Process the reply by extracting its content and updating the relevant node.
+    """
+    # Extract the email content
+    body = ""
+    if msg.is_multipart():
+        for part in msg.walk():
+            content_type = part.get_content_type()
+            if content_type == "text/plain":
+                body = part.get_payload(decode=True).decode(errors="replace")
+                break
+    else:
+        body = msg.get_payload(decode=True).decode(errors="replace")
+
+    logging.info(f"Reply received: {body}")
+    # Update your node with the reply content
+    # Example: store_reply_in_node(body)
+    # (Implement your own logic here as needed.)
+
+
+def send_email(to: str, subject: str, body: str) -> str:
+    """
+    Sends an email via SMTP using configuration details provided via environment variables.
+
+    Environment Variables:
+      - SMTP_HOST: SMTP server address (default: smtp.gmail.com)
+      - SMTP_PORT: SMTP server port (default: 587)
+      - SMTP_USER: SMTP username/email (default: your-email@gmail.com)
+      - SMTP_PASSWORD: SMTP password (App Password for Gmail)
+    """
+    # Load SMTP configuration from environment variables.
+    smtp_host = os.environ.get("SMTP_HOST", "smtp.gmail.com")
+    smtp_port = int(os.environ.get("SMTP_PORT", 587))
+    smtp_user = os.environ.get("SMTP_USER", "your-email@gmail.com")
+    smtp_password = os.environ.get("SMTP_PASSWORD", "your-app-password")
+
+    # Create the email message.
+    msg = MIMEMultipart()
+    msg["From"] = smtp_user
+    msg["To"] = to
+    msg["Subject"] = subject
+    msg.attach(MIMEText(body, "plain"))
+
+    try:
+        # Connect to the SMTP server, start TLS, login, and send the email.
+        server = smtplib.SMTP(smtp_host, smtp_port)
+        server.starttls()
+        server.login(smtp_user, smtp_password)
+        server.sendmail(smtp_user, to, msg.as_string())
+        server.quit()
+        print(f"[Email] Sent email to {to} with subject '{subject}'.")
+        return "Email sent."
+    except Exception as e:
+        print(f"[Email] Error sending email: {e}")
+        return f"Failed to send email: {e}"
+
+
+if __name__ == "__main__":
+    # Start the email listener in a background thread
+    from threading import Thread
+
+    listener_thread = Thread(target=check_for_replies, daemon=True)
+    listener_thread.start()
+
+    # Simulate sending an email via the engine
+    print("Sending test email through engine...")
+    email_result = send_email(
+        to=os.environ.get("TEST_EMAIL", "asstinbrown@gmail.com"),
+        subject="Engine Test Email",
+        body="This is a test email sent from the engine for asynchronous reply processing.",
+    )
+    print(email_result)
+
+    # Keep the main thread alive to allow asynchronous email checking
+    try:
+        while True:
+            time.sleep(5)
+    except KeyboardInterrupt:
+        print("Shutting down.")
+
+if __name__ == "__main__":
+    nodes = []
+    active_node = None
+    init_agent(nodes, active_node)
+
+
+# tools = [
+#     {
+#         "type": "function",
+#         "function": {
+#             "name": "send_email",
+#             "description": "Send an email to a given recipient with a subject and message.",
+#             "parameters": {
+#                 "type": "object",
+#                 "properties": {
+#                     "to": {
+#                         "type": "string",
+#                         "description": "The recipient email address.",
+#                     },
+#                     "subject": {
+#                         "type": "string",
+#                         "description": "The email subject line.",
+#                     },
+#                     "body": {
+#                         "type": "string",
+#                         "description": "The body of the email.",
+#                     },
+#                 },
+#                 "required": ["to", "subject", "body"],
+#                 "additionalProperties": False,
+#             },
+#             "strict": True,
+#         },
+#     },
+#     {
+#         "type": "function",
+#         "function": {
+#             "name": "query_perplexity",
+#             "description": "Query the Perplexity API with a research query.",
+#             "parameters": {
+#                 "type": "object",
+#                 "properties": {
+#                     "query": {
+#                         "type": "string",
+#                         "description": "The research query.",
+#                     }
+#                 },
+#                 "required": ["query"],
+#                 "additionalProperties": False,
+#             },
+#             "strict": True,
+#         },
+#     },
+#     {
+#         "type": "function",
+#         "function": {
+#             "name": "video_analysis",
+#             "description": "Simulate video analysis steps for a provided video URL.",
+#             "parameters": {
+#                 "type": "object",
+#                 "properties": {
+#                     "video_url": {
+#                         "type": "string",
+#                         "description": "The URL of the video to analyze.",
+#                     }
+#                 },
+#                 "required": ["video_url"],
+#                 "additionalProperties": False,
+#             },
+#             "strict": True,
+#         },
+#     },
+#     {
+#         "type": "function",
+#         "function": {
+#             "name": "create_node",
+#             "description": "Create a new research node in the graph.",
+#             "parameters": {
+#                 "type": "object",
+#                 "properties": {
+#                     "node_class": {
+#                         "type": "string",
+#                         "description": "The class of the node (e.g., heading, tweet, report, video).",
+#                     },
+#                     "text": {
+#                         "type": "string",
+#                         "description": "The content text for the node.",
+#                     },
+#                 },
+#                 "required": ["node_class", "text"],
+#                 "additionalProperties": False,
+#             },
+#             "strict": True,
+#         },
+#     },
+#     {
+#         "type": "function",
+#         "function": {
+#             "name": "create_edge",
+#             "description": "Create an edge between two nodes in the graph.",
+#             "parameters": {
+#                 "type": "object",
+#                 "properties": {
+#                     "from_id": {
+#                         "type": "string",
+#                         "description": "The source node id.",
+#                     },
+#                     "to_id": {
+#                         "type": "string",
+#                         "description": "The target node id.",
+#                     },
+#                 },
+#                 "required": ["from_id", "to_id"],
+#                 "additionalProperties": False,
+#             },
+#             "strict": True,
+#         },
+#     },
+# ]
 
 if __name__ == "__main__":
     queue = []
