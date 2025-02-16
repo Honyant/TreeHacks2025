@@ -13,7 +13,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 from openai import OpenAI
-from external_functions import query_perplexity, video_analysis
+from external_functions import query_perplexity, query_rag, call_phone_number, send_email
 from utils import *
 import schemas
 
@@ -57,6 +57,121 @@ def init_agent(nodes: list[schemas.NodeV2], active_node: str):
         root_node = None
     if verbose: print(f"node_content: {root_node.content}")
     return root_node_id
+
+
+def execute_mode_i(nodes: list[schemas.NodeV2], active_node: str):
+    """
+    Executes mode I of the research agent, which expands knowledge by using
+    tools to gather information.
+    """
+    if not active_node:
+        print("No active node selected")
+        return
+
+    current_node = get_node_by_id(nodes, active_node)
+    if not current_node:
+        print(f"Could not find active node with id: {active_node}")
+        return
+    
+    current_node_name = current_node.name
+    current_node_content = current_node.content
+
+    messages = [
+       {"role": "system", "content": mode_i},
+       {"role": "user", "content": f"""
+
+        The entire research graph:
+        {nodes_to_string(nodes)}
+
+        The current research node:
+        Title: {current_node_name}
+        Content: {current_node_content}
+
+         Generate a list of call functions to be executed to gather information.
+         """}
+    ]
+
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=messages,
+        tools=mode_i_tools,
+        temperature=0.7
+    )
+    message = response.choices[0].message
+    new_nodes = []
+    breakpoint()
+
+    if hasattr(message, "tool_calls") and message.tool_calls:
+        messages.append(message)
+        for tool_call in message.tool_calls:
+            if tool_call.function.name == "search":
+                args = json.loads(tool_call.function.arguments)
+                result = query_perplexity(perplexity_client, args["query"])
+                new_node_id = create_node(
+                    nodes=nodes,
+                    name=args["name"],
+                    type="search",
+                    content=result,
+                    source="perplexity_search",
+                    timestamp=datetime.now()
+                )
+                current_node.children.append(new_node_id)
+                new_nodes.append(new_node_id)
+            elif tool_call.function.name == "retrieve":
+                args = json.loads(tool_call.function.arguments)
+                result = query_rag(args.get("query", ""))
+                new_node_id = create_node(
+                    nodes=nodes,
+                    name=args["name"],
+                    type="file",
+                    content=result,
+                    source="rag",
+                    timestamp=datetime.now()
+                )
+                current_node.children.append(new_node_id)
+                new_nodes.append(new_node_id)
+            elif tool_call.function.name == "email":
+                args = json.loads(tool_call.function.arguments)
+                result = send_email(args["recipient"], args["subject"], args["message"])
+                new_node_id = create_node(
+                    nodes=nodes,
+                    name=args["name"],
+                    type="email",
+                    content=args["message"] + "\n" + result,
+                    source="email",
+                    timestamp=datetime.now()
+                )
+                current_node.children.append(new_node_id)
+                new_nodes.append(new_node_id)
+            elif tool_call.function.name == "phone":
+                args = json.loads(tool_call.function.arguments)
+                result = call_phone_number("+16501234567")
+                new_node_id = create_node(
+                    nodes=nodes,
+                    name=args["name"],
+                    type="call",
+                    content=result,
+                    source="call",
+                    timestamp=datetime.now()
+                )
+                current_node.children.append(new_node_id)
+                new_nodes.append(get_node_by_id(nodes, new_node_id))
+            elif tool_call.function.name == "ask":
+                args = json.loads(tool_call.function.arguments)
+                new_node_id = create_node(
+                    nodes=nodes,
+                    name=args["name"],
+                    type="question",
+                    content=args["question"],
+                    source="question",
+                    timestamp=datetime.now()
+                )
+                current_node.children.append(new_node_id)
+                new_nodes.append(new_node_id)
+
+    breakpoint()
+    if verbose: print_nodes(nodes)
+    return new_nodes
 
 def execute_mode_ii(nodes: list[schemas.NodeV2], active_node: str):
     """
@@ -590,33 +705,33 @@ def send_email(to: str, subject: str, body: str) -> str:
         return f"Failed to send email: {e}"
 
 
-if __name__ == "__main__":
-    # Start the email listener in a background thread
-    from threading import Thread
+# if __name__ == "__main__":
+#     # Start the email listener in a background thread
+#     from threading import Thread
 
-    listener_thread = Thread(target=check_for_replies, daemon=True)
-    listener_thread.start()
+#     listener_thread = Thread(target=check_for_replies, daemon=True)
+#     listener_thread.start()
 
-    # Simulate sending an email via the engine
-    print("Sending test email through engine...")
-    email_result = send_email(
-        to=os.environ.get("TEST_EMAIL", "asstinbrown@gmail.com"),
-        subject="Engine Test Email",
-        body="This is a test email sent from the engine for asynchronous reply processing.",
-    )
-    print(email_result)
+#     # Simulate sending an email via the engine
+#     print("Sending test email through engine...")
+#     email_result = send_email(
+#         to=os.environ.get("TEST_EMAIL", "asstinbrown@gmail.com"),
+#         subject="Engine Test Email",
+#         body="This is a test email sent from the engine for asynchronous reply processing.",
+#     )
+#     print(email_result)
 
-    # Keep the main thread alive to allow asynchronous email checking
-    try:
-        while True:
-            time.sleep(5)
-    except KeyboardInterrupt:
-        print("Shutting down.")
+#     # Keep the main thread alive to allow asynchronous email checking
+#     try:
+#         while True:
+#             time.sleep(5)
+#     except KeyboardInterrupt:
+#         print("Shutting down.")
 
-if __name__ == "__main__":
-    nodes = []
-    active_node = None
-    init_agent(nodes, active_node)
+# if __name__ == "__main__":
+#     nodes = []
+#     active_node = None
+#     init_agent(nodes, active_node)
 
 
 # tools = [
@@ -733,21 +848,21 @@ if __name__ == "__main__":
 #     },
 # ]
 
-# if __name__ == "__main__":
-#     queue = []
-#     nodes = []
-#     active_node = None
-#     root_node_id = init_agent(nodes, active_node)
-#     queue.append(root_node_id)
-#     for i in range(5):
-#         if queue:
-#             active_node = queue.pop(0)
-#             new_nodes = execute_mode_ii(nodes, active_node)
-#             for node in new_nodes:
-#                 queue.append(node)
+if __name__ == "__main__":
+    queue = []
+    nodes = []
+    active_node = None
+    root_node_id = init_agent(nodes, active_node)
+    queue.append(root_node_id)
+    for i in range(5):
+        if queue:
+            active_node = queue.pop(0)
+            new_nodes = execute_mode_i(nodes, active_node)
+            for node in new_nodes:
+                queue.append(node)
     
-#     print_nodes(nodes)
-#     export_nodes(nodes, "nodes.json")
+    print_nodes(nodes)
+    export_nodes(nodes, "nodes.json")
 
 
 # tools = [

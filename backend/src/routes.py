@@ -11,18 +11,26 @@ import engine as processing_engine
 from engine import init_agent, execute_mode_ii
 from database import SessionLocal
 from utils import get_db, get_node_by_id
+from RAG import init_rag
 from external_functions import call_phone_number
 
 router = APIRouter()
 
 nodes = []
 chat_messages = []
-
+RAG_client = None
+RAG_collection = None
 
 @router.post("/start", response_model=schemas.ChatMessageOut)
 def start():
     global nodes
     global chat_messages
+    global RAG_client
+    global RAG_collection
+    
+    if not RAG_client or not RAG_collection:
+        RAG_client, RAG_collection = init_rag()
+
     root_node = init_agent(nodes, None)
     # set found node id to 0
     found_node = get_node_by_id(nodes, root_node)
