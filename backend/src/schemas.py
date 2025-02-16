@@ -15,6 +15,7 @@ class NodeContent(BaseModel):
 
 class NodeBase(BaseModel):
     node_class: str
+    title: str
     content: NodeContent
 
 
