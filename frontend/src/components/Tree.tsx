@@ -60,6 +60,11 @@ export const Tree: React.FC<TreeProps> = () => {
         onEdgesChange={onEdgesChange}
         connectionLineType={ConnectionLineType.SmoothStep}
         fitView
+        fitViewOptions={{
+          padding: 0.1,
+          duration: 1000,
+          nodes: [{ id: "1" }, { id: "2" }, { id: "10" }],
+        }}
         nodeTypes={nodeTypes}
         panOnScroll
         selectionOnDrag

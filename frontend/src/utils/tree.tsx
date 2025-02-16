@@ -29,12 +29,17 @@ export const initialTree: Tree = {
   3: {
     id: "3",
     name: "child3",
-    children: ["4", "5"],
+    children: ["4", "5", "11", "12", "13", "14", "15"],
     siblings: ["9"],
     spouses: ["6"],
   },
   4: { id: "4", name: "grandChild4" },
   5: { id: "5", name: "grandChild5" },
+  11: { id: "11", name: "grandChild5" },
+  12: { id: "12", name: "grandChild5" },
+  13: { id: "13", name: "grandChild5" },
+  14: { id: "14", name: "grandChild5" },
+  15: { id: "15", name: "grandChild5" },
   6: { id: "6", name: "spouse of child 3", isSpouse: true },
   8: {
     id: "8",

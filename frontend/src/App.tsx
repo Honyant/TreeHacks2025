@@ -15,7 +15,7 @@ function App() {
 
   return (
     <>
-      <div className="max-h-[10vh]">
+      <div className="max-h-[10vh] min-h-[10vh]">
         <h1 className="text-3xl font-bold">Chat Application</h1>
         {isPending && <div>Loading chat history...</div>}
         {error && <div>Error: {JSON.stringify(error)}</div>}
