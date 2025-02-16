@@ -89,7 +89,8 @@ Some potential insights you can generate are:
 
 Each node should be an individual topic without subtopics. Please separate subtopics into distinct nodes.
 Do not create frivolous nodes that are similar to other existing nodes. Output the list of nodes in the order of priority and importance.
-Limit the number of nodes you create to 4. Only the first six nodes will be considered.
+Limit the number of nodes you create to 4. Only the first 4 nodes will be considered.
+Please keep the titles concise (around 5 words) and unique to the given node. Do not repeat general information in the titles that relate to other nodes.
 
 You have access to the following functions:
 [create_node]

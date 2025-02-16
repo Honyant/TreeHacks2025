@@ -1,257 +1,257 @@
 {
-  "5f345ebf-79bd-48d1-b0e2-60d56897a8a8": {
-    "id": "5f345ebf-79bd-48d1-b0e2-60d56897a8a8",
-    "name": "Unveiling Offshore Finance Secrets Globally",
+  "099ae778-8092-408d-8738-105741fbfb82": {
+    "id": "099ae778-8092-408d-8738-105741fbfb82",
+    "name": "Unveiling Offshore Finance's Hidden Networks",
     "type": "root",
-    "content": "This research project spearheaded by the International Consortium of Investigative Journalists (ICIJ), in collaboration with major global media outlets, delves into the world of offshore finance and tax havens. The investigation focuses on uncovering the intricate mechanisms and networks that facilitate the opaque movement of capital through offshore structures, which are often linked to tax evasion, corruption, and illicit activities. By scrutinizing available data, corporate registries, and the involvement of financial intermediaries like banks and law firms, the project seeks to trace asset ownership and identify beneficiaries of these secretive financial networks. Additionally, the research aims to highlight the regulatory loopholes that permit the persistence of such systems and evaluate their broader economic impact. The ultimate objective is to enhance public understanding of offshore financial operations and address their implications on governance, transparency, and economic inequality across modern tax systems. This undertaking builds on past revelations, such as LuxLeaks and Swiss Leaks, to address the critical questions regarding how these financial structures are created, sustained, and their implications for global economic systems.",
+    "content": "This investigative project, led by the International Consortium of Investigative Journalists (ICIJ), in collaboration with prominent media outlets like S\u00fcddeutsche Zeitung, The Guardian, and others, scrutinizes the complex world of offshore finance and tax havens. The investigation focuses on unveiling the mechanisms by which offshore financial structures, such as shell companies and trusts, are created and operated. Despite their legal use for tax planning, these entities are often implicated in tax evasion, corruption, and money laundering, impacting governance, tax systems, and financial transparency worldwide. By accessing and analyzing data from corporate registries and financial networks, the project traces ownership structures and identifies beneficiaries, exploring how these arrangements create systemic challenges for governments and taxpayers. Additionally, the role of financial intermediaries\u2014including banks, law firms, and accountants\u2014in facilitating these practices is critically assessed. Outcomes aim to shed light on regulatory loopholes that enable these opaque systems, evaluating their economic repercussions on tax revenue, financial crime, and global inequality. Through its comprehensive approach, the project seeks to expand public understanding of the offshore finance landscape and advocate for enhanced financial transparency and reform.",
     "metadata": {
       "source": "brief",
-      "timestamp": "2025-02-15 22:17:47"
+      "timestamp": "2025-02-15 22:50:37"
     },
     "children": [
-      "97b09a68-ceed-47ff-983e-aaa0bb1fc780",
-      "806e714d-3d27-4da4-a61f-08dc6a3c4db3",
-      "af551176-c1ff-44c9-82f4-e5ae6137e162",
-      "a1e0fc9b-b877-49ab-a1a3-606d2a777628"
+      "f56cc57b-34cb-42b4-9858-cb315765a9e6",
+      "817aebd3-c01e-4890-a90b-8ba0360b89dc",
+      "91cbf872-7359-4d24-826d-2bf32792a58d",
+      "b586c2e8-a2e6-4f65-b98b-16135aac992b"
     ]
   },
-  "97b09a68-ceed-47ff-983e-aaa0bb1fc780": {
-    "id": "97b09a68-ceed-47ff-983e-aaa0bb1fc780",
-    "name": "Investigative Techniques in Offshore Finance",
+  "f56cc57b-34cb-42b4-9858-cb315765a9e6": {
+    "id": "f56cc57b-34cb-42b4-9858-cb315765a9e6",
+    "name": "Role of Financial Intermediaries",
     "type": "text",
-    "content": "Exploring the methods and tools used by investigative journalists to uncover offshore finance secrets, including data analysis, source interviews, and collaboration with international bodies.",
+    "content": "This node will explore the involvement of financial intermediaries such as banks, law firms, and accountants in facilitating offshore finance practices. It will assess how these entities contribute to the creation and operation of offshore financial structures and their implications on financial transparency.",
     "metadata": {
       "source": "mode_ii",
-      "timestamp": "2025-02-15 22:17:52"
+      "timestamp": "2025-02-15 22:50:44"
     },
     "children": [
-      "94a1f582-7b37-48a1-a35f-ae1eb720c590",
-      "85e5d7db-6c06-4a62-8790-68ab888a164b",
-      "9f247665-08d0-477a-9507-94d3963ac9a1",
-      "828f6186-5a96-48bf-a106-be482aae10c0"
+      "d423cdaf-fd19-40fd-a4e4-8f97650761fd",
+      "e37ecb13-4848-4ca3-814a-32eb8839c3e9",
+      "01e01eb7-1e6b-4bc9-9851-78c3df4278b5",
+      "330994e7-cf03-4e51-9db0-2c66c18e833e"
     ]
   },
-  "806e714d-3d27-4da4-a61f-08dc6a3c4db3": {
-    "id": "806e714d-3d27-4da4-a61f-08dc6a3c4db3",
-    "name": "Legal and Regulatory Loopholes in Offshore Finance",
+  "817aebd3-c01e-4890-a90b-8ba0360b89dc": {
+    "id": "817aebd3-c01e-4890-a90b-8ba0360b89dc",
+    "name": "Impact on Global Inequality",
     "type": "text",
-    "content": "Examining the specific legal and regulatory gaps that allow offshore finance structures to thrive, including jurisdictional differences and lack of global enforcement mechanisms.",
+    "content": "This node will focus on the economic repercussions of offshore finance on global inequality. It will examine how tax evasion and avoidance through offshore mechanisms exacerbate wealth disparities between individuals and nations.",
     "metadata": {
       "source": "mode_ii",
-      "timestamp": "2025-02-15 22:17:52"
+      "timestamp": "2025-02-15 22:50:44"
     },
     "children": [
-      "8c2c4f33-1cea-476d-bc13-d61c25361c1a",
-      "1af1583b-0ec8-4883-b295-458cf921b54e",
-      "ff1c97e0-ec05-48af-9e78-b190558d67ec",
-      "aefde562-a660-4a50-8e08-a5af42ceccc6"
+      "8616d313-7da8-4b15-834d-7fcf2eafc5bd",
+      "fae1db84-84b0-4cb0-99a2-3ac9b829423a",
+      "945c83f5-525a-4a53-bfe0-9db213512cc9",
+      "6ed5fb36-6b11-44f9-b2d5-0d0ee796edc1"
     ]
   },
-  "af551176-c1ff-44c9-82f4-e5ae6137e162": {
-    "id": "af551176-c1ff-44c9-82f4-e5ae6137e162",
-    "name": "Economic Impact of Offshore Finance on Global Systems",
+  "91cbf872-7359-4d24-826d-2bf32792a58d": {
+    "id": "91cbf872-7359-4d24-826d-2bf32792a58d",
+    "name": "Regulatory Loopholes and Challenges",
     "type": "text",
-    "content": "Analyzing how offshore finance affects economic inequality, tax revenue, and global financial stability.",
+    "content": "This node will analyze the regulatory gaps that allow offshore finance systems to thrive. It will explore the challenges faced by governments in closing these loopholes and the implications for financial crime and governance.",
     "metadata": {
       "source": "mode_ii",
-      "timestamp": "2025-02-15 22:17:52"
+      "timestamp": "2025-02-15 22:50:44"
     },
     "children": [
-      "655e1936-0fb2-432d-8178-b41c9230be3c",
-      "d8610f3a-c933-4197-85bd-3c10ca11e4db",
-      "86d6f7a0-3167-4c59-9d64-eca359a84a90",
-      "d13c896c-db0e-48f7-98f4-895207ab485d"
+      "0d41b66a-b518-42b4-9574-26d909d27590",
+      "65173243-6d73-40c3-a686-f35a43b4a1a4",
+      "325f02af-4da6-45d6-bea0-718886d35b31",
+      "95dd0668-d902-4cf8-b24f-de88ade1bd80"
     ]
   },
-  "a1e0fc9b-b877-49ab-a1a3-606d2a777628": {
-    "id": "a1e0fc9b-b877-49ab-a1a3-606d2a777628",
-    "name": "The Role of Financial Intermediaries in Offshore Finance",
+  "b586c2e8-a2e6-4f65-b98b-16135aac992b": {
+    "id": "b586c2e8-a2e6-4f65-b98b-16135aac992b",
+    "name": "Beneficiaries of Offshore Structures",
     "type": "text",
-    "content": "Investigating the involvement of banks, law firms, and other intermediaries in facilitating offshore finance operations.",
+    "content": "This node will identify and trace the beneficiaries of offshore financial structures. It will investigate how these individuals or entities use offshore mechanisms for tax planning and potential illicit activities.",
     "metadata": {
       "source": "mode_ii",
-      "timestamp": "2025-02-15 22:17:52"
+      "timestamp": "2025-02-15 22:50:44"
     },
     "children": [
-      "c218b61a-fb09-4120-ab59-cc33dc471fe0",
-      "39c3c6b3-0a86-41be-b20d-566b241ce045",
-      "37611724-85a7-4768-9fd2-d1e90feb1a8a",
-      "25dbb042-02e6-4379-bd63-c9d2ef0fbd07"
+      "e0d8baaf-1ee0-4123-b7dd-db5b2c86da7d",
+      "4d1b9f2f-15d8-4514-9a74-106d85a53463",
+      "74a73d7b-ed3b-4df3-8b1e-3873b7fb1b65",
+      "15adfba0-8626-448b-9a25-bdec6e67058c"
     ]
   },
-  "94a1f582-7b37-48a1-a35f-ae1eb720c590": {
-    "id": "94a1f582-7b37-48a1-a35f-ae1eb720c590",
-    "name": "Data Analysis Tools in Offshore Finance Investigation",
+  "d423cdaf-fd19-40fd-a4e4-8f97650761fd": {
+    "id": "d423cdaf-fd19-40fd-a4e4-8f97650761fd",
+    "name": "Banks in Offshore Finance",
     "type": "text",
-    "content": "Exploring specific data analysis tools and software used in investigating offshore finance, such as data mining and visualization techniques.",
+    "content": "Investigate how banks assist in creating and maintaining offshore accounts and structures, and their role in financial secrecy.",
     "metadata": {
       "source": "mode_ii",
-      "timestamp": "2025-02-15 22:17:58"
+      "timestamp": "2025-02-15 22:50:49"
     },
     "children": []
   },
-  "85e5d7db-6c06-4a62-8790-68ab888a164b": {
-    "id": "85e5d7db-6c06-4a62-8790-68ab888a164b",
-    "name": "Challenges in Source Interviews for Offshore Finance",
+  "e37ecb13-4848-4ca3-814a-32eb8839c3e9": {
+    "id": "e37ecb13-4848-4ca3-814a-32eb8839c3e9",
+    "name": "Law Firms and Offshore Structures",
     "type": "text",
-    "content": "Examining the difficulties faced by journalists when conducting interviews with sources in offshore finance investigations, including issues of trust and confidentiality.",
+    "content": "Examine the involvement of law firms in designing offshore entities and their impact on legal compliance.",
     "metadata": {
       "source": "mode_ii",
-      "timestamp": "2025-02-15 22:17:58"
+      "timestamp": "2025-02-15 22:50:49"
     },
     "children": []
   },
-  "9f247665-08d0-477a-9507-94d3963ac9a1": {
-    "id": "9f247665-08d0-477a-9507-94d3963ac9a1",
-    "name": "Collaboration with International Bodies in Financial Investigation",
+  "01e01eb7-1e6b-4bc9-9851-78c3df4278b5": {
+    "id": "01e01eb7-1e6b-4bc9-9851-78c3df4278b5",
+    "name": "Accountants and Financial Transparency",
     "type": "text",
-    "content": "Analyzing how investigative journalists collaborate with international agencies and organizations to uncover offshore finance secrets.",
+    "content": "Explore the role of accountants in managing offshore finances and their influence on transparency and regulation.",
     "metadata": {
       "source": "mode_ii",
-      "timestamp": "2025-02-15 22:17:58"
+      "timestamp": "2025-02-15 22:50:49"
     },
     "children": []
   },
-  "828f6186-5a96-48bf-a106-be482aae10c0": {
-    "id": "828f6186-5a96-48bf-a106-be482aae10c0",
-    "name": "Legal and Ethical Considerations in Offshore Finance Investigations",
+  "330994e7-cf03-4e51-9db0-2c66c18e833e": {
+    "id": "330994e7-cf03-4e51-9db0-2c66c18e833e",
+    "name": "Implications on Financial Transparency",
     "type": "text",
-    "content": "Identifying the legal and ethical challenges that arise during the investigation of offshore finance, including privacy laws and journalistic ethics.",
+    "content": "Analyze the broader implications of financial intermediaries' involvement in offshore finance on global financial transparency.",
     "metadata": {
       "source": "mode_ii",
-      "timestamp": "2025-02-15 22:17:58"
+      "timestamp": "2025-02-15 22:50:49"
     },
     "children": []
   },
-  "8c2c4f33-1cea-476d-bc13-d61c25361c1a": {
-    "id": "8c2c4f33-1cea-476d-bc13-d61c25361c1a",
-    "name": "Jurisdictional Differences in Offshore Finance",
+  "8616d313-7da8-4b15-834d-7fcf2eafc5bd": {
+    "id": "8616d313-7da8-4b15-834d-7fcf2eafc5bd",
+    "name": "Role of Offshore Tax Havens",
     "type": "text",
-    "content": "Investigating how varying legal frameworks across jurisdictions create loopholes in offshore finance. This includes examining specific countries or regions with lax regulations that attract offshore financial activities.",
+    "content": "Explore how offshore tax havens facilitate tax evasion and avoidance, contributing to global inequality by allowing individuals and corporations to reduce their tax liabilities significantly.",
     "metadata": {
       "source": "mode_ii",
-      "timestamp": "2025-02-15 22:18:04"
+      "timestamp": "2025-02-15 22:50:55"
     },
     "children": []
   },
-  "1af1583b-0ec8-4883-b295-458cf921b54e": {
-    "id": "1af1583b-0ec8-4883-b295-458cf921b54e",
-    "name": "Lack of Global Enforcement Mechanisms in Offshore Finance",
+  "fae1db84-84b0-4cb0-99a2-3ac9b829423a": {
+    "id": "fae1db84-84b0-4cb0-99a2-3ac9b829423a",
+    "name": "Impact on Developing Economies",
     "type": "text",
-    "content": "Analyzing the absence of cohesive international enforcement mechanisms that allow offshore finance structures to exploit regulatory gaps. This includes evaluating efforts by international bodies and organizations to address these gaps.",
+    "content": "Examine how offshore finance affects developing countries, particularly in terms of lost tax revenues that could have been used for public services and infrastructure.",
     "metadata": {
       "source": "mode_ii",
-      "timestamp": "2025-02-15 22:18:04"
+      "timestamp": "2025-02-15 22:50:55"
     },
     "children": []
   },
-  "ff1c97e0-ec05-48af-9e78-b190558d67ec": {
-    "id": "ff1c97e0-ec05-48af-9e78-b190558d67ec",
-    "name": "Impact of Offshore Finance on Global Economy",
+  "945c83f5-525a-4a53-bfe0-9db213512cc9": {
+    "id": "945c83f5-525a-4a53-bfe0-9db213512cc9",
+    "name": "Wealth Disparity Metrics",
     "type": "text",
-    "content": "Exploring the broader economic implications of offshore finance, including its effects on tax revenues, economic inequality, and financial stability.",
+    "content": "Identify and analyze metrics used to measure the impact of offshore finance on wealth disparity, such as the Gini coefficient and other economic indicators.",
     "metadata": {
       "source": "mode_ii",
-      "timestamp": "2025-02-15 22:18:04"
+      "timestamp": "2025-02-15 22:50:55"
     },
     "children": []
   },
-  "aefde562-a660-4a50-8e08-a5af42ceccc6": {
-    "id": "aefde562-a660-4a50-8e08-a5af42ceccc6",
-    "name": "Strategies Used by Corporations in Offshore Finance",
+  "6ed5fb36-6b11-44f9-b2d5-0d0ee796edc1": {
+    "id": "6ed5fb36-6b11-44f9-b2d5-0d0ee796edc1",
+    "name": "Policy Responses and Effectiveness",
     "type": "text",
-    "content": "Examining the specific strategies and structures used by corporations to exploit legal and regulatory loopholes in offshore finance, including the use of shell companies and trusts.",
+    "content": "Investigate current policy measures aimed at curbing offshore finance and evaluate their effectiveness in addressing global inequality.",
     "metadata": {
       "source": "mode_ii",
-      "timestamp": "2025-02-15 22:18:04"
+      "timestamp": "2025-02-15 22:50:55"
     },
     "children": []
   },
-  "655e1936-0fb2-432d-8178-b41c9230be3c": {
-    "id": "655e1936-0fb2-432d-8178-b41c9230be3c",
-    "name": "Influence of Offshore Finance on Economic Inequality",
+  "0d41b66a-b518-42b4-9574-26d909d27590": {
+    "id": "0d41b66a-b518-42b4-9574-26d909d27590",
+    "name": "Offshore Finance Legal Frameworks",
     "type": "text",
-    "content": "Investigating the role of offshore finance in exacerbating or reducing economic inequality within and between countries.",
+    "content": "Examine the legal frameworks that support offshore finance systems, focusing on their design and implementation. Evaluate how these frameworks differ across jurisdictions and their role in regulatory challenges.",
     "metadata": {
       "source": "mode_ii",
-      "timestamp": "2025-02-15 22:18:09"
+      "timestamp": "2025-02-15 22:51:02"
     },
     "children": []
   },
-  "d8610f3a-c933-4197-85bd-3c10ca11e4db": {
-    "id": "d8610f3a-c933-4197-85bd-3c10ca11e4db",
-    "name": "Offshore Finance and Its Effect on Tax Revenue",
+  "65173243-6d73-40c3-a686-f35a43b4a1a4": {
+    "id": "65173243-6d73-40c3-a686-f35a43b4a1a4",
+    "name": "Impact on Financial Crime",
     "type": "text",
-    "content": "Examining how offshore financial mechanisms influence national and international tax revenues.",
+    "content": "Investigate how regulatory loopholes in offshore finance contribute to financial crime, including money laundering and tax evasion. Assess the scale of these activities and their implications for global finance.",
     "metadata": {
       "source": "mode_ii",
-      "timestamp": "2025-02-15 22:18:09"
+      "timestamp": "2025-02-15 22:51:02"
     },
     "children": []
   },
-  "86d6f7a0-3167-4c59-9d64-eca359a84a90": {
-    "id": "86d6f7a0-3167-4c59-9d64-eca359a84a90",
-    "name": "Impact of Offshore Finance on Global Financial Stability",
+  "325f02af-4da6-45d6-bea0-718886d35b31": {
+    "id": "325f02af-4da6-45d6-bea0-718886d35b31",
+    "name": "Government Strategies and Policies",
     "type": "text",
-    "content": "Analyzing the ways in which offshore financial practices contribute to or undermine global financial stability.",
+    "content": "Explore the strategies and policies governments have attempted to implement to close regulatory gaps in offshore finance. Evaluate their effectiveness and the obstacles they face.",
     "metadata": {
       "source": "mode_ii",
-      "timestamp": "2025-02-15 22:18:09"
+      "timestamp": "2025-02-15 22:51:02"
     },
     "children": []
   },
-  "d13c896c-db0e-48f7-98f4-895207ab485d": {
-    "id": "d13c896c-db0e-48f7-98f4-895207ab485d",
-    "name": "Regulatory Responses to Offshore Finance",
+  "95dd0668-d902-4cf8-b24f-de88ade1bd80": {
+    "id": "95dd0668-d902-4cf8-b24f-de88ade1bd80",
+    "name": "International Cooperation Challenges",
     "type": "text",
-    "content": "Exploring the effectiveness of international and national regulations in controlling and managing offshore financial activities.",
+    "content": "Analyze the challenges of international cooperation in regulating offshore finance, including political, economic, and legal barriers. Discuss the potential for global regulatory frameworks.",
     "metadata": {
       "source": "mode_ii",
-      "timestamp": "2025-02-15 22:18:09"
+      "timestamp": "2025-02-15 22:51:02"
     },
     "children": []
   },
-  "c218b61a-fb09-4120-ab59-cc33dc471fe0": {
-    "id": "c218b61a-fb09-4120-ab59-cc33dc471fe0",
-    "name": "Legal Frameworks Governing Offshore Finance",
+  "e0d8baaf-1ee0-4123-b7dd-db5b2c86da7d": {
+    "id": "e0d8baaf-1ee0-4123-b7dd-db5b2c86da7d",
+    "name": "Tax Planning Strategies",
     "type": "text",
-    "content": "Exploring the legal structures and regulations that govern the operation of financial intermediaries in offshore finance.",
+    "content": "Explore different tax planning strategies employed by beneficiaries of offshore structures, including legal loopholes and aggressive tax avoidance.",
     "metadata": {
       "source": "mode_ii",
-      "timestamp": "2025-02-15 22:18:16"
+      "timestamp": "2025-02-15 22:51:07"
     },
     "children": []
   },
-  "39c3c6b3-0a86-41be-b20d-566b241ce045": {
-    "id": "39c3c6b3-0a86-41be-b20d-566b241ce045",
-    "name": "Impact of Offshore Finance on Global Economy",
+  "4d1b9f2f-15d8-4514-9a74-106d85a53463": {
+    "id": "4d1b9f2f-15d8-4514-9a74-106d85a53463",
+    "name": "Regulatory Gaps in Offshore Jurisdictions",
     "type": "text",
-    "content": "Analyzing how offshore finance activities, facilitated by intermediaries, affect global economic stability and tax systems.",
+    "content": "Analyze the regulatory gaps in offshore jurisdictions that allow beneficiaries to exploit these structures for illicit activities.",
     "metadata": {
       "source": "mode_ii",
-      "timestamp": "2025-02-15 22:18:16"
+      "timestamp": "2025-02-15 22:51:07"
     },
     "children": []
   },
-  "37611724-85a7-4768-9fd2-d1e90feb1a8a": {
-    "id": "37611724-85a7-4768-9fd2-d1e90feb1a8a",
-    "name": "Ethical Considerations in Offshore Finance",
+  "74a73d7b-ed3b-4df3-8b1e-3873b7fb1b65": {
+    "id": "74a73d7b-ed3b-4df3-8b1e-3873b7fb1b65",
+    "name": "Impact on Global Economy",
     "type": "text",
-    "content": "Examining the ethical implications of financial intermediaries' roles in offshore finance, including issues of transparency and accountability.",
+    "content": "Assess the impact of offshore structures on the global economy, including tax revenue losses and economic inequality.",
     "metadata": {
       "source": "mode_ii",
-      "timestamp": "2025-02-15 22:18:16"
+      "timestamp": "2025-02-15 22:51:07"
     },
     "children": []
   },
-  "25dbb042-02e6-4379-bd63-c9d2ef0fbd07": {
-    "id": "25dbb042-02e6-4379-bd63-c9d2ef0fbd07",
-    "name": "Technological Advancements in Offshore Finance",
+  "15adfba0-8626-448b-9a25-bdec6e67058c": {
+    "id": "15adfba0-8626-448b-9a25-bdec6e67058c",
+    "name": "Legal vs. Illegal Uses",
     "type": "text",
-    "content": "Investigating how technology is being used by financial intermediaries to enhance offshore finance operations, including fintech solutions and cybersecurity measures.",
+    "content": "Differentiate between legal uses of offshore structures for tax planning and illegal activities such as money laundering and tax evasion.",
     "metadata": {
       "source": "mode_ii",
-      "timestamp": "2025-02-15 22:18:16"
+      "timestamp": "2025-02-15 22:51:07"
     },
     "children": []
   }
