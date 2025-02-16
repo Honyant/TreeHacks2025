@@ -1,9 +1,6 @@
 import weaviate
 import voyageai
 import os
-import io
-import PIL.Image
-import base64
 from typing import List, Dict
 from dotenv import load_dotenv
 
@@ -13,7 +10,6 @@ from unstructured.partition.auto import partition
 from unstructured.partition.pdf import partition_pdf
 from unstructured.partition.html import partition_html
 from unstructured.chunking.title import chunk_by_title
-from unstructured.staging.base import elements_from_base64_gzipped_json
 
 load_dotenv()
 
@@ -45,8 +41,8 @@ def load_pdfs(dir) -> List[Dict]:
             elements = partition_pdf(
                 filename=file_path,
                 strategy="hi_res",
-                extract_image_block_types=["Image", "Table"],
-                extract_image_block_to_payload=True,
+                extract_image_block_types=[],
+                extract_image_block_to_payload=False,
             )
             documents.extend(elements)
     return documents
@@ -67,25 +63,6 @@ def preprocess_chunks(elements):
             "filetype": chunk.to_dict()["metadata"]["filetype"]
         }
         embedding_object.append(chunk.to_dict()["text"])
-
-        # Add the images to the embedding object
-        if "orig_elements" in chunk.to_dict()["metadata"]:
-            base64_elements_str = chunk.to_dict()["metadata"]["orig_elements"]
-            eles = elements_from_base64_gzipped_json(base64_elements_str)
-            image_data = []
-            for ele in eles:
-                if ele.to_dict()["type"] == "Image":
-                    base64_image = ele.to_dict()["metadata"]["image_base64"]
-                    image_data.append(base64_image)
-                    pil_image = PIL.Image.open(io.BytesIO(base64.b64decode(base64_image)))
-                    # Resize image if larger than 1000x1000 while maintaining aspect ratio
-                    if pil_image.size[0] > 1000 or pil_image.size[1] > 1000:
-                        ratio = min(1000/pil_image.size[0], 1000/pil_image.size[1])
-                        new_size = (int(pil_image.size[0] * ratio), int(pil_image.size[1] * ratio))
-                        pil_image = pil_image.resize(new_size, PIL.Image.Resampling.LANCZOS)
-                    embedding_object.append(pil_image)
-
-            metedata_dict["image_data"] = image_data
 
         embedding_objects.append(embedding_object)
         embedding_metadatas.append(metedata_dict)
@@ -111,16 +88,14 @@ def query(question, collection):
     )
     for o in response.objects:
         print(o.properties['text'])
-        for image_data in o.properties['image_data']:
-            # Display the image using PIL
-            img = PIL.Image.open(io.BytesIO(base64.b64decode(image_data)))
-            width, height = img.size
-            if width > 500 or height > 500:
-                ratio = min(500/width, 500/height)
-                new_size = (int(width * ratio), int(height * ratio))
-                img = img.resize(new_size)
-            img.show()
         print(o.metadata.distance)
+
+def init_rag():
+    client, collection = setup_db()
+    elements = load_pdfs("./pdfs")
+    embedding_objects, embedding_metadatas = preprocess_chunks(elements)
+    embed_data(embedding_objects, embedding_metadatas, collection)
+    return client, collection
 
 if __name__ == "__main__":
     client, collection = setup_db()
