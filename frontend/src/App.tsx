@@ -2,9 +2,9 @@ import { useMemo } from "react";
 import { useCallback, useEffect, useState } from "react";
 import {
   ConnectionLineType,
+  MiniMap,
   NodeProps,
   OnSelectionChangeFunc,
-  Panel,
   ReactFlow,
   SelectionMode,
   useEdgesState,
@@ -23,14 +23,17 @@ import {
 import { components } from "./openapi";
 
 const nodeTypes: {
-  [key in components["schemas"]["Graph"]["nodes"][number]["type"]]: React.FC<
+  [key in components["schemas"]["ChatMessageOut"]["graph"][string]["type"]]: React.FC<
     NodeProps<CustomNode>
   >;
 } = {
   text: customNode,
-  image: customNode,
-  link: customNode,
-  audio: customNode,
+  question: customNode,
+  email: customNode,
+  call: customNode,
+  file: customNode,
+  search: customNode,
+  root: customNode,
 };
 
 const { nodes: layoutedNodes, edges: layoutedEdges } =
@@ -81,6 +84,14 @@ function App() {
 
   const { setCenter } = useReactFlow();
 
+  const fitViewNodes = useMemo(() => {
+    const root = nodes.find((node) => node.data.isRoot);
+    const children = nodes
+      .filter((node) => root?.data.children?.includes(node.id))
+      .map((node) => ({ id: node.id }));
+    return children.slice(2);
+  }, [nodes]);
+
   useEffect(() => {
     if (selectedNodes.length === 1) {
       const node = nodes.find((node) => node.id === selectedNodes[0]);
@@ -100,7 +111,7 @@ function App() {
   }, [nodes, selectedNodes, setCenter]);
 
   return (
-    <>
+    <div className="w-screen h-screen">
       <div className="max-h-[10vh] min-h-[10vh]">
         {isPending ? (
           <div>Loading chat history...</div>
@@ -111,7 +122,7 @@ function App() {
         )}
       </div>
 
-      <div style={{ width: "100vw", height: "90vh" }}>
+      <div style={{ width: "100vw", height: "90%" }}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -121,9 +132,10 @@ function App() {
           connectionLineType={ConnectionLineType.SmoothStep}
           fitView
           fitViewOptions={{
-            padding: 0.1,
+            padding: 0.2,
             duration: 1000,
             minZoom: 0.0001,
+            nodes: fitViewNodes,
           }}
           nodeTypes={nodeTypes}
           panOnScroll
@@ -133,13 +145,19 @@ function App() {
           proOptions={{ hideAttribution: true }}
           nodesDraggable={false}
         >
-          <Panel position="top-right">
-            <button onClick={() => onLayout("TB")}>vertical layout</button>
-            <button onClick={() => onLayout("LR")}>horizontal layout</button>
-          </Panel>
+          <MiniMap
+            nodeStrokeWidth={3}
+            position={"top-left"}
+            bgColor="#1d232a"
+            maskColor="transparent"
+            maskStrokeColor="#fff"
+            maskStrokeWidth={1.5}
+            style={{ border: "1px dashed #fff", borderRadius: 10 }}
+            pannable
+          />
         </ReactFlow>
       </div>
-    </>
+    </div>
   );
 }
 
