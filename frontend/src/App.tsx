@@ -50,6 +50,8 @@ function App() {
     body: { role: "user", message: "Hello, world!" },
   });
 
+  const [globalLoading, setGlobalLoading] = useState(false);
+
   const initialMessages = useMemo(() => {
     return (
       data?.chat_history.map((msg) => ({
@@ -118,8 +120,12 @@ function App() {
         ) : error ? (
           <div>Error: {JSON.stringify(error)}</div>
         ) : (
-          <ChatBox initialMessages={initialMessages} />
+          <ChatBox
+            initialMessages={initialMessages}
+            setGlobalLoading={setGlobalLoading}
+          />
         )}
+        {globalLoading && <div>Loading...</div>}
       </div>
 
       <div style={{ width: "100vw", height: "90%" }}>

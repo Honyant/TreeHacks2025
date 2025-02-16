@@ -9,9 +9,13 @@ export type Message = {
 
 interface ChatBoxProps {
   initialMessages?: Message[];
+  setGlobalLoading: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export const ChatBox: React.FC<ChatBoxProps> = ({ initialMessages = [] }) => {
+export const ChatBox: React.FC<ChatBoxProps> = ({
+  initialMessages = [],
+  setGlobalLoading,
+}) => {
   const [isOpen, setIsOpen] = useState(true);
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState("");
@@ -36,10 +40,21 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ initialMessages = [] }) => {
     setInput("");
 
     try {
-      const { data } = queryClient.useQuery("post", "/chat", {
-        body: { role: "user", message: trimmedInput },
-        refetchOnWindowFocus: false,
-      });
+      const { data, isLoading, isFetched } = queryClient.useQuery(
+        "post",
+        "/chat",
+        {
+          body: { role: "user", message: trimmedInput },
+          refetchOnWindowFocus: false,
+        }
+      );
+
+      if (isLoading) {
+        setGlobalLoading(true);
+      }
+      if (isFetched) {
+        setGlobalLoading(false);
+      }
 
       if (data) {
         const chatHistory = data.chat_history || ["", ""];
