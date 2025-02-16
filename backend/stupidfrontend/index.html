@@ -129,7 +129,7 @@
         const response = await fetch(`${backendUrl}/chat`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: messageText })
+          body: JSON.stringify({ role: "user", message: messageText })
         });
         if (!response.ok) {
           throw new Error("Network response was not ok");
@@ -165,7 +165,7 @@
         const response = await fetch(`${backendUrl}/chat`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: "Hello" })
+          body: JSON.stringify({ role: "user", message: "Hello" })
         });
         if (response.ok) {
           const data = await response.json();

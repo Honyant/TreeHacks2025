@@ -12,14 +12,12 @@ from database import SessionLocal
 
 router = APIRouter()
 
-
 def get_db():
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
-
 
 @router.post("/chat", response_model=schemas.ChatMessageOut)
 def chat_endpoint(payload: schemas.ChatMessageCreate, db: Session = Depends(get_db)):

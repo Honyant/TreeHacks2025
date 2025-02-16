@@ -121,6 +121,8 @@ export interface components {
         Node: {
             /** Node Class */
             node_class: string;
+            /** Title */
+            title: string;
             content: components["schemas"]["NodeContent"];
             /** Id */
             id: string;
@@ -135,6 +137,8 @@ export interface components {
         NodeCreate: {
             /** Node Class */
             node_class: string;
+            /** Title */
+            title: string;
             content: components["schemas"]["NodeContent"];
         };
         /** NodeMetadata */
