@@ -11,6 +11,7 @@ import {
   useNodesState,
   useReactFlow,
 } from "@xyflow/react";
+import { useShallow } from "zustand/shallow";
 
 import { queryClient } from "./api/client";
 import { ChatBox } from "./components/ChatBox";
@@ -49,10 +50,15 @@ const panOnDrag = [1, 2];
 
 function App() {
   const { data, error, isPending } = queryClient.useQuery("post", "/chat", {
-    body: { role: "user", message: "Hello, world!" },
+    body: { role: "user", message: "Hello, world!", node_id: "0" },
   });
 
-  const globalLoading = useStore((state) => state.globalLoading);
+  const { globalLoading, setSelectedNodeId } = useStore(
+    useShallow((state) => ({
+      globalLoading: state.globalLoading,
+      setSelectedNodeId: state.setSelectedNodeId,
+    }))
+  );
 
   const initialMessages = useMemo(() => {
     return (
@@ -82,9 +88,17 @@ function App() {
 
   const [selectedNodes, setSelectedNodes] = useState<string[]>([]);
 
-  const onChange: OnSelectionChangeFunc = useCallback(({ nodes }) => {
-    setSelectedNodes(nodes.map((node) => node.id));
-  }, []);
+  const onChange: OnSelectionChangeFunc = useCallback(
+    ({ nodes }) => {
+      setSelectedNodes(nodes.map((node) => node.id));
+      if (nodes.length === 1) {
+        setSelectedNodeId(nodes[0].id);
+      } else if (nodes.length === 0) {
+        setSelectedNodeId(null);
+      }
+    },
+    [setSelectedNodeId]
+  );
 
   const { setCenter } = useReactFlow();
   const [selectedNode, setSelectedNode] = useState<CustomNode | null>(null);

@@ -18,7 +18,7 @@ export const createGraphSlice: StateCreator<Store, [], [], GraphSlice> = (
   set
 ) => ({
   globalLoading: false,
-  selectedNodeId: null,
+  selectedNodeId: "0",
   setGlobalLoading: (loading) => set({ globalLoading: loading }),
   setSelectedNodeId: (id) => set({ selectedNodeId: id }),
 });

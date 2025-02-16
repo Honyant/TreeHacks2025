@@ -3,8 +3,10 @@ import { type Edge, type Node, type NodeProps, Position } from "@xyflow/react";
 import { Handle } from "@xyflow/react";
 import { layoutFromMap } from "entitree-flex";
 import { twMerge } from "tailwind-merge";
+import { useShallow } from "zustand/shallow";
 
 import { components } from "../openapi";
+import { useStore } from "../store";
 
 import dumpTree from "./dump.json";
 
@@ -136,6 +138,12 @@ export const layoutElements = (
 const { Top, Bottom, Left, Right } = Position;
 
 export const customNode = memo(({ data, type }: NodeProps<CustomNode>) => {
+  const { selectedNodeId, globalLoading } = useStore(
+    useShallow((state) => ({
+      selectedNodeId: state.selectedNodeId,
+      globalLoading: state.globalLoading,
+    }))
+  );
   const { name, direction, content } = data;
 
   const isTreeHorizontal = direction === "LR";
@@ -150,8 +158,9 @@ export const customNode = memo(({ data, type }: NodeProps<CustomNode>) => {
   return (
     <div
       className={twMerge(
-        "flex flex-col px-4 py-2 shadow-md rounded-md border-2",
-        nodeClassNames[type]
+        "flex flex-col shadow-md rounded-md border-2",
+        nodeClassNames[type],
+        selectedNodeId === data.id && !globalLoading && "border-pink-600"
       )}
       style={{
         minWidth: nodeWidth,
@@ -160,10 +169,34 @@ export const customNode = memo(({ data, type }: NodeProps<CustomNode>) => {
         maxHeight: nodeHeight,
       }}
     >
-      <div className="text-sm text-center text-slate-700 font-bold">
+      {selectedNodeId === data.id && globalLoading && (
+        <svg
+          height="100%"
+          width="100%"
+          style={{ position: "absolute", marginLeft: -2, marginTop: -2 }}
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <rect
+            rx="12"
+            ry="12"
+            style={{
+              strokeDasharray: 260,
+              strokeWidth: 5,
+              position: "relative",
+              fill: "transparent",
+              stroke: "oklch(0.592 0.249 0.584)",
+              animation: "svgAnimation 2.5s linear infinite",
+            }}
+            height="100%"
+            width="100%"
+            stroke-linejoin="round"
+          />
+        </svg>
+      )}
+      <div className="text-sm text-center text-slate-700 font-bold mx-4 pt-2">
         {(name?.length ?? 0 > 50) ? name?.substring(0, 50) + "..." : name}
       </div>
-      <div className="mt-2 text-xs text-slate-500 font-extralight overflow-ellipsis overflow-hidden max-h-full">
+      <div className="mt-2 text-xs text-slate-500 font-extralight overflow-ellipsis overflow-hidden max-h-full mx-4 pb-2">
         {content}
       </div>
       {hasChildren && (
@@ -174,7 +207,6 @@ export const customNode = memo(({ data, type }: NodeProps<CustomNode>) => {
           id={isTreeHorizontal ? Right : Bottom}
         />
       )}
-
       {/* Target Handle */}
       {!isRootNode && (
         <Handle

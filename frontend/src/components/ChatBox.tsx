@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useShallow } from "zustand/shallow";
 
 import { queryClient } from "../api/client";
 import { useStore } from "../store";
@@ -13,7 +14,12 @@ interface ChatBoxProps {
 }
 
 export const ChatBox: React.FC<ChatBoxProps> = ({ initialMessages = [] }) => {
-  const setGlobalLoading = useStore((state) => state.setGlobalLoading);
+  const { setGlobalLoading, selectedNodeId } = useStore(
+    useShallow((state) => ({
+      selectedNodeId: state.selectedNodeId,
+      setGlobalLoading: state.setGlobalLoading,
+    }))
+  );
 
   const [isOpen, setIsOpen] = useState(true);
   const [messages, setMessages] = useState<Message[]>(initialMessages);
@@ -43,7 +49,11 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ initialMessages = [] }) => {
         "post",
         "/chat",
         {
-          body: { role: "user", message: trimmedInput },
+          body: {
+            role: "user",
+            message: trimmedInput,
+            node_id: selectedNodeId!,
+          },
           refetchOnWindowFocus: false,
         }
       );
