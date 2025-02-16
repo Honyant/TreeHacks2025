@@ -21,15 +21,16 @@ chat_messages = []
 RAG_client = None
 RAG_collection = None
 
+
 @router.post("/start", response_model=schemas.ChatMessageOut)
 def start():
     global nodes
     global chat_messages
     global RAG_client
     global RAG_collection
-    
-    if not RAG_client or not RAG_collection:
-        RAG_client, RAG_collection = init_rag()
+
+    # if not RAG_client or not RAG_collection:
+    # RAG_client, RAG_collection = init_rag()
 
     root_node = init_agent(nodes, None)
     # set found node id to 0

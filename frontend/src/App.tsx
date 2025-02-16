@@ -75,35 +75,31 @@ function App() {
     [setEdges]
   );
 
-  const queryClient = useClient();
-  const { data, isPending } = queryClient.useQuery("post", "/start", {});
-
-  const initialMessages = useMemo(() => {
-    return (
-      data?.chat_history.map((msg) => ({
-        role: msg.role,
-        content: msg.message,
-      })) || []
-    );
-  }, [data]);
-
   const { setCenter } = useReactFlow();
 
-  useEffect(() => {
-    if (data) {
-      const { nodes: layoutedNodes } = setGraph(data.graph);
-      const rootNode = layoutedNodes.find((node) => node.data.isRoot)!;
+  const queryClient = useClient();
+  const startMutation = queryClient.useMutation("post", "/start", {});
 
-      setCenter(
-        rootNode.position.x + (rootNode.width ? rootNode.width / 2 : 0),
-        rootNode.position.y + (rootNode.height ? rootNode.height / 2 : 0),
-        {
-          zoom: 1,
-          duration: 1000,
-        }
-      );
-    }
-  }, [data, setNodes, setEdges, setCenter, setGraph]);
+  useEffect(() => {
+    (async () => {
+      try {
+        const data = await startMutation.mutateAsync({});
+        const { nodes: layoutedNodes } = setGraph(data.graph);
+        const rootNode = layoutedNodes.find((node) => node.data.isRoot)!;
+
+        setCenter(
+          rootNode.position.x + (rootNode.width ? rootNode.width / 2 : 0),
+          rootNode.position.y + (rootNode.height ? rootNode.height / 2 : 0),
+          {
+            zoom: 1,
+            duration: 1000,
+          }
+        );
+      } catch (error) {
+        console.error(error);
+      }
+    })();
+  }, []);
 
   const [selectedNodes, setSelectedNodes] = useState<string[]>([]);
 
@@ -153,11 +149,7 @@ function App() {
   return (
     <div className="w-screen h-screen">
       <div className="max-h-[10vh] min-h-[10vh]">
-        {isPending ? (
-          <div>Loading chat history...</div>
-        ) : selectedNode ? (
-          <ChatBox initialMessages={initialMessages} />
-        ) : null}
+        {selectedNode ? <ChatBox initialMessages={[]} /> : null}
         {selectedNode && (
           <ExpandBox node={selectedNode as unknown as CustomNode} />
         )}
