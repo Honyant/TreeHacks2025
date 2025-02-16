@@ -71,6 +71,29 @@ def export_nodes(nodes: list[schemas.NodeV2], file_path: str) -> None:
     with open(file_path, 'w') as f:
         json.dump({node.id: node.model_dump() for node in nodes}, f, indent=2)
 
+def get_ancestor_content(nodes: list[schemas.NodeV2], node_id: str) -> str:
+    # Get all ancestor content by doing BFS from root to target node
+    visited = set()
+    queue = [(nodes[0], [])]  # Start with root node and empty path
+    ancestor_content = []
+    
+    while queue:
+        current_node, path = queue.pop(0)
+        visited.add(current_node.id)
+        
+        # Add current node's content if it's in the path to target
+        if current_node.id == node_id:
+            ancestor_content = [node.content for node in path + [current_node]]
+            break
+            
+        # Add unvisited children to queue
+        for child_id in current_node.children:
+            if child_id not in visited:
+                child_node = get_node_by_id(nodes, child_id)
+                if child_node:
+                    queue.append((child_node, path + [current_node]))
+                    
+    return "\n".join(ancestor_content)
 
 mode_i = """
 You are an investigative journalist's research agent.

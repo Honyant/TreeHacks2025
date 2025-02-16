@@ -103,6 +103,9 @@ def execute_mode_i(nodes: list[schemas.NodeV2], active_node: str, collection):
         Title: {current_node_name}
         Content: {current_node_content}
 
+        The content of all the ancestors of the current node:
+        {get_ancestor_content(nodes, active_node)}
+
          Generate a list of call functions to be executed to gather information.
          """,
         },
@@ -158,7 +161,7 @@ def execute_mode_i(nodes: list[schemas.NodeV2], active_node: str, collection):
                 new_nodes.append(new_node_id)
             elif tool_call.function.name == "phone":
                 args = json.loads(tool_call.function.arguments)
-                result = call_phone_number("+16501234567", args["topic"])
+                result = call_phone_number(os.getenv("PHONE_NUMBER_TO"), args["topic"])
                 new_node_id = create_node(
                     nodes=nodes,
                     name=args["name"],
@@ -213,6 +216,9 @@ def execute_mode_ii(nodes: list[schemas.NodeV2], active_node: str):
          The current research node:
          Title: {current_node_name}
          Content: {current_node_content}
+
+         The content of all the ancestors of the current node:
+         {get_ancestor_content(nodes, active_node)}
 
          Generate relevant insights and create new nodes.
 """,
@@ -480,11 +486,11 @@ def process_chat_message(user_message: str, node_id: str, nodes, chat_messages):
         model="gpt-4o",
         messages=[
             {
-                "role": "system",
-                "content": 'You have access to the following tools: ["create_node"]',
+                "role": "system", 
+                "content": "You have access to the following functions:\n[create_node]\n- create_node: to create a new node in the research graph"
             },
             {"role": "user", "content": transcript},
-            {"role": "assistant", "content": f"The user is asking you about this node: {parent_node.content}"},
+            {"role": "assistant", "content": f"The user is asking you about this node: {parent_node.content} \n The content of all the ancestors of the current node: {get_ancestor_content(nodes, node_id)}"},
             {"role": "user", "content": user_message},
         ],
         tools=mode_ii_tools,
