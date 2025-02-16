@@ -27,46 +27,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/nodes": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Add Node
-         * @description Manually add a node to the research graph.
-         */
-        post: operations["add_node_nodes_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/nodes/{node_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /**
-         * Delete Node
-         * @description Manually delete a node (and any associated edges) from the research graph.
-         */
-        delete: operations["delete_node_nodes__node_id__delete"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -94,60 +54,28 @@ export interface components {
         ChatMessageOut: {
             /** Chat History */
             chat_history: components["schemas"]["ChatMessage"][];
-            graph: components["schemas"]["Graph"];
-        };
-        /** Edge */
-        Edge: {
-            /** From Node Id */
-            from_node_id: string;
-            /** To Node Id */
-            to_node_id: string;
-            /** Id */
-            id: string;
-        };
-        /** Graph */
-        Graph: {
-            /** Nodes */
-            nodes: components["schemas"]["NodeV2"][];
-            /** Edges */
-            edges: components["schemas"]["Edge"][];
+            /** Graph */
+            graph: {
+                [key: string]: components["schemas"]["NodeV2"];
+            };
         };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
-        /** Node */
-        Node: {
-            /** Node Class */
-            node_class: string;
-            /** Title */
-            title: string;
-            content: components["schemas"]["NodeContent"];
-            /** Id */
-            id: string;
-        };
-        /** NodeContent */
-        NodeContent: {
-            /** Text */
-            text: string;
-            metadata: components["schemas"]["NodeMetadata"];
-        };
         /** NodeMetadata */
         NodeMetadata: {
             /** Source */
             source: string;
-            /**
-             * Timestamp
-             * Format: date-time
-             */
+            /** Timestamp */
             timestamp: string;
         };
         /**
          * NodeType
          * @enum {string}
          */
-        NodeType: "text" | "image" | "audio" | "link";
+        NodeType: "root" | "text" | "question" | "email" | "call" | "file" | "search";
         /** NodeV2 */
         NodeV2: {
             /** Id */
@@ -204,70 +132,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ChatMessageOut"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    add_node_nodes_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["NodeV2"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Node"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    delete_node_nodes__node_id__delete: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                node_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */
