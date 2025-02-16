@@ -24,7 +24,7 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ initialMessages = [] }) => {
       setMessages((prev) => [
         ...prev,
         { role: "user", content: input.trim() },
-        { role: "assistant", content: "server chat response" },
+        { role: "assistant", content: "insert server message" },
       ]);
       setInput("");
     }
@@ -36,19 +36,19 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ initialMessages = [] }) => {
   }, [messages]);
 
   return (
-    <div className="fixed top-4 right-4 flex flex-col space-y-2 z-10">
+    <div className="card bg-base-100 w-96 shadow-xl fixed top-4 right-4 flex flex-col z-10">
       <button onClick={toggleChat} className="btn btn-primary">
         {isOpen ? "Minimize Chat" : "Open Chat"}
       </button>
       {isOpen && (
-        <div className="w-96 h-120 bg-white border border-gray-300 rounded-lg shadow-lg flex flex-col">
+        <div className="w-96 h-120 bg-base-content border rounded-lg shadow-lg flex flex-col my-2">
           {/* header */}
-          <div className="p-4 border-b border-gray-200 bg-blue-5 rounded-full0">
-            <h2 className="text-lg font-semibold text-gray-800">Chat</h2>
+          <div className="p-4 border-b rounded-lg bg-base-300">
+            <h2 className="text-lg font-semibold">Chat</h2>
           </div>
 
           {/* chat messages */}
-          <div className="p-4 flex-1 overflow-y-auto">
+          <div className="p-4 flex-1 overflow-y-auto bg-base-content rounded-lg">
             {messages.length === 0 ? (
               <p className="text-gray-500 text-sm">No messages yet...</p>
             ) : (
@@ -60,10 +60,10 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ initialMessages = [] }) => {
                     className={`mb-2 flex ${isUser ? "justify-end" : "justify-start"}`}
                   >
                     <div
-                      className={`inline-block text-sm px-4 py-2 rounded-lg whitespace-normal text-wrap break-words max-w-[80%]
+                      className={`inline-block text-sm px-4 py-2 rounded-lg text-wrap break-words max-w-[80%]
                                                 ${isUser
-                          ? "bg-green-100 text-gray-700 text-right" // user
-                          : "bg-blue-100 text-gray-700 text-left" // assistant
+                          ? "chat chat-end chat-bubble text-right" // user
+                          : "chat chat-start chat-bubble text-left" // assistant
                         }`}
                     >
                       {msg.content}
@@ -76,7 +76,8 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ initialMessages = [] }) => {
           </div>
 
           {/* input box */}
-          <div className="p-2 border-t border-gray-200">
+          <div className="input-bordered rounded-full">
+            <input type="file" className="file-input w-full rounded-lg" />
             <input
               type="text"
               value={input}
@@ -85,7 +86,7 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ initialMessages = [] }) => {
                 if (e.key === "Enter") handleSend();
               }}
               placeholder="Type your message..."
-              className="w-full border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-400 text-black text-sm"
+              className="w-full input rounded-lg"
             />
           </div>
         </div>
@@ -93,4 +94,5 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ initialMessages = [] }) => {
     </div>
   );
 };
+
 
