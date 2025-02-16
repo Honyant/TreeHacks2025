@@ -3,11 +3,28 @@ from pydantic import BaseModel
 from typing import Any, Dict, List
 
 
+class NodeType(str, Enum): # to be displayed differently in the UI
+    text = "text"
+    image = "image"
+    audio = "audio"
+    link = "link"
+
+
 class NodeMetadata(BaseModel):
     source: str
     timestamp: datetime
 
 
+class NodeV2(BaseModel):
+    id: str
+    name: str # title of the node
+    type: NodeType # type of the node
+    content: str
+    metadata: NodeMetadata
+    children: List[str] # ids of the children nodes
+
+
+# deprecate below.
 class NodeContent(BaseModel):
     text: str
     metadata: NodeMetadata
