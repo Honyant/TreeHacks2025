@@ -89,6 +89,7 @@ You have access to the following tools:
 DO NOT ONLY USE THE PHONE TOOL.
 DO NOT CALL MORE THAN ONE PERSON BECAUSE PEOPLE ARE BUSY.
 CREATE AT LEAST FIVE TOOL CALLS IN YOUR OUTPUT.
+IN EMAILS, SEND REQUESTS FOR INFORMATION, NOT FOR CONVERSATIONS.
 """
 # You have access to the following tools:
 # [ask, search, retrieve, email, phone]

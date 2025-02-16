@@ -4,11 +4,9 @@ from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from typing import List
-
-import models
 import schemas
 import engine as processing_engine
-from engine import init_agent, execute_mode_ii, execute_mode_i
+from engine import init_agent, execute_mode_ii, execute_mode_i, process_chat_message
 from database import SessionLocal
 from utils import get_db, get_node_by_id
 from RAG import init_rag
@@ -21,7 +19,6 @@ chat_messages = []
 RAG_client = None
 RAG_collection = None
 
-
 @router.post("/start", response_model=schemas.ChatMessageOut)
 def start():
     print("Starting")
@@ -30,16 +27,7 @@ def start():
     global RAG_client
     global RAG_collection
 
-    # if not RAG_client or not RAG_collection:
-    # RAG_client, RAG_collection = init_rag()
-
-    root_node = init_agent(nodes, None)
-    # set found node id to 0
-    found_node = get_node_by_id(nodes, root_node)
-    found_node.id = "0"
-    found_node.type = "root"
-
-    # create output object:
+    # Simply return the current chat history and graph
     chat_history = [schemas.ChatMessage.model_validate(msg) for msg in chat_messages]
     nodes_dict = {node.id: schemas.NodeV2.model_validate(node) for node in nodes}
     output = schemas.ChatMessageOut(chat_history=chat_history, graph=nodes_dict)
@@ -80,26 +68,11 @@ def generate(payload: schemas.GeneratePayload):
 
 @router.post("/chat", response_model=schemas.ChatMessageOut)
 def chat_endpoint(payload: schemas.ChatMessageCreate):
-    global nodes
-    global chat_messages
+    global nodes, chat_messages
     message = payload.message
-    role = payload.role
-    id = payload.node_id
-
-    # if the node is a question, we modify the question node and add on the response from the user:
-    chat_messages.append(
-        schemas.ChatMessage(
-            id=str(uuid.uuid4()),
-            role=role,
-            node_id=id,
-            message=message,
-            timestamp=datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
-        )
-    )
-    found_node = get_node_by_id(nodes, id)
-    if found_node and found_node.type == "question":
-        found_node.content = message
-
+    active_node_uuid = payload.node_id
+    process_chat_message(message, active_node_uuid, nodes, chat_messages)
+    
     # create output object:
     chat_history = [schemas.ChatMessage.model_validate(msg) for msg in chat_messages]
     nodes_dict = {node.id: schemas.NodeV2.model_validate(node) for node in nodes}

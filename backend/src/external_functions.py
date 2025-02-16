@@ -27,20 +27,33 @@ def query_perplexity(client: OpenAI, query: str) -> str:
     print(f"[Perplexity API] Response: {response.choices[0]}")
     return response.choices[0].message.content
 
+
 def query_rag(query: str, collection) -> str:
     response = collection.query.near_text(query)
     return response.objects[0].properties["text"]
 
-def call_phone_number(phone_number: str) -> str:
-    print(f"[Phone Call] Calling {phone_number}")
-    import time
-    time.sleep(10)
-    return f"Phone call to {phone_number} simulated."
+
+def call_phone_number(phone_number: str, topic: str) -> str:
+    print(f"[Phone Call] Calling {phone_number} about {topic}")
+    # Make HTTP POST request to call endpoint
+    import requests
+
+    response = requests.post(
+        "http://localhost:6060/make-call",
+        headers={"accept": "application/json", "Content-Type": "application/json"},
+        json={"phone_number": phone_number, "topic": topic, "max_duration": 300},
+    )
+
+    if response.status_code != 202:  # Changed from 200 to 202 to match the API response
+        print(f"[Phone Call] Error: {response.text}")
+        return f"Failed to make phone call: {response.text}"
+    return f"Phone call to {phone_number} about {topic} initiated."
+
 
 def send_email(to: str, subject: str, body: str) -> str:
     """
     Sends an email via SMTP using configuration details provided via environment variables.
-    
+
     Environment Variables:
       - SMTP_HOST: SMTP server address (default: smtp.gmail.com)
       - SMTP_PORT: SMTP server port (default: 587)
