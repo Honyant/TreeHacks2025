@@ -3,20 +3,14 @@ import { useShallow } from "zustand/shallow";
 
 import { useClient } from "../api/client";
 import { useStore } from "../store";
-import { CustomNode, nodeClassNames } from "../utils/tree";
+import { nodeClassNames } from "../utils/tree";
 
-interface ExpandBoxProps {
-  node: CustomNode;
-}
-
-export const ExpandBox: React.FC<ExpandBoxProps> = ({ node }) => {
+export const ExpandBox: React.FC = () => {
   const queryClient = useClient();
-  const { data, type } = node;
-  const node_color =
-    type !== undefined ? nodeClassNames[type] : nodeClassNames["text"];
 
-  const { selectedNodeId, setGlobalLoading, setGraph } = useStore(
+  const { nodes, selectedNodeId, setGlobalLoading, setGraph } = useStore(
     useShallow((state) => ({
+      nodes: state.nodes,
       selectedNodeId: state.selectedNodeId,
       setGlobalLoading: state.setGlobalLoading,
       setGraph: state.setGraph,
@@ -44,6 +38,13 @@ export const ExpandBox: React.FC<ExpandBoxProps> = ({ node }) => {
       console.error(error);
     }
   }, [selectedNodeId, setGlobalLoading, generateMutation, setGraph]);
+
+  const node = nodes.find((n) => n.id === selectedNodeId);
+  if (!node) return null;
+
+  const { data, type } = node;
+  const node_color =
+    type !== undefined ? nodeClassNames[type] : nodeClassNames["text"];
 
   return (
     <div>

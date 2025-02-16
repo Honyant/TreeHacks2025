@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect } from "react";
 import {
   applyEdgeChanges,
   applyNodeChanges,
@@ -53,6 +53,7 @@ function App() {
     setEdges,
     setGraph,
     globalLoading,
+    selectedNodeId,
     setSelectedNodeId,
   } = useStore(
     useShallow((state) => ({
@@ -62,6 +63,7 @@ function App() {
       setEdges: state.setEdges,
       setGraph: state.setGraph,
       globalLoading: state.globalLoading,
+      selectedNodeId: state.selectedNodeId,
       setSelectedNodeId: state.setSelectedNodeId,
     }))
   );
@@ -101,35 +103,11 @@ function App() {
     })();
   }, []);
 
-  const [selectedNodes, setSelectedNodes] = useState<string[]>([]);
-
   const onChange: OnSelectionChangeFunc = useCallback(
     ({ nodes }) => {
-      setSelectedNodes(nodes.map((node) => node.id));
       if (nodes.length === 1) {
         setSelectedNodeId(nodes[0].id);
-      } else if (nodes.length === 0) {
-        setSelectedNodeId(null);
-      }
-    },
-    [setSelectedNodeId]
-  );
-
-  const [selectedNode, setSelectedNode] = useState<CustomNode | null>(null);
-
-  const fitViewNodes = useMemo(() => {
-    const root = nodes.find((node) => node.data.isRoot);
-    const children = nodes
-      .filter((node) => root?.data.children?.includes(node.id))
-      .map((node) => ({ id: node.id }));
-    return children.slice(2);
-  }, [nodes]);
-
-  useEffect(() => {
-    if (selectedNodes.length === 1) {
-      const node = nodes.find((node) => node.id === selectedNodes[0]);
-      if (node) {
-        setSelectedNode(node);
+        const node = nodes[0];
         setCenter(
           node.position.x +
             (node.measured?.width ? node.measured.width / 2 : 0),
@@ -140,19 +118,26 @@ function App() {
             duration: 1000,
           }
         );
-      } else {
-        setSelectedNode(null);
+      } else if (nodes.length === 0) {
+        setSelectedNodeId(null);
       }
-    }
-  }, [nodes, selectedNodes, setCenter]);
+    },
+    [setSelectedNodeId, setCenter]
+  );
+
+  const fitViewNodes = useMemo(() => {
+    const root = nodes.find((node) => node.data.isRoot);
+    const children = nodes
+      .filter((node) => root?.data.children?.includes(node.id))
+      .map((node) => ({ id: node.id }));
+    return children.slice(2);
+  }, [nodes]);
 
   return (
     <div className="w-screen h-screen">
       <div className="max-h-[10vh] min-h-[10vh]">
-        {selectedNode ? <ChatBox initialMessages={[]} /> : null}
-        {selectedNode && (
-          <ExpandBox node={selectedNode as unknown as CustomNode} />
-        )}
+        {selectedNodeId ? <ChatBox initialMessages={[]} /> : null}
+        {selectedNodeId && <ExpandBox />}
         {globalLoading && <div>Loading...</div>}
       </div>
 
@@ -169,7 +154,6 @@ function App() {
             padding: 0.2,
             duration: 1000,
             minZoom: 0.0001,
-            nodes: fitViewNodes,
           }}
           nodeTypes={nodeTypes}
           panOnScroll
@@ -179,8 +163,7 @@ function App() {
           proOptions={{ hideAttribution: true }}
           nodesDraggable={false}
           onPaneClick={() => {
-            setSelectedNodes([]);
-            setSelectedNode(null);
+            setSelectedNodeId(null);
           }}
         >
           <MiniMap
