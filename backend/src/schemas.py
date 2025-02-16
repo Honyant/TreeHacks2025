@@ -11,6 +11,7 @@ class ModelOutput(BaseModel):
 
 
 class NodeType(str, Enum):  # to be displayed differently in the UI
+    root = "root"
     text = "text"
     image = "image"
     audio = "audio"
@@ -19,7 +20,7 @@ class NodeType(str, Enum):  # to be displayed differently in the UI
 
 class NodeMetadata(BaseModel):
     source: str
-    timestamp: datetime
+    timestamp: str  # Changed from datetime to str
 
 
 class NodeV2(BaseModel):

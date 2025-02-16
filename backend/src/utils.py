@@ -38,7 +38,7 @@ def create_node(nodes: list[schemas.NodeV2], name: str, type: str, content: str,
         content=content,
         metadata=schemas.NodeMetadata(
             source=source,
-            timestamp=timestamp
+            timestamp=timestamp.strftime("%Y-%m-%d %H:%M:%S")
         ),
         children=[]
     ))
@@ -83,6 +83,8 @@ Some potential insights you can generate are:
 4. questions that need to be answered through human interviews or alternative data collection methods
 
 Each node should be an individual topic without subtopics. Please separate subtopics into distinct nodes.
+Do not create frivolous nodes that are similar to other existing nodes. Output the list of nodes in the order of priority and importance.
+Limit the number of nodes you create to 6. Only the first six nodes will be considered.
 
 You have access to the following functions:
 [create_node]

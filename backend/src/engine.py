@@ -11,6 +11,7 @@ from utils import *
 import schemas
 
 load_dotenv()
+verbose = False
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 perplexity_client = OpenAI(api_key=os.getenv("PERPLEXITY_API_KEY"), base_url="https://api.perplexity.ai")
@@ -40,16 +41,15 @@ def init_agent(nodes: list[schemas.NodeV2], active_node: str):
     parsed_response = schemas.ModelOutput.model_validate(json.loads(response_content))
     
     root_node_id = create_node(nodes, parsed_response.title, "root", parsed_response.content, "brief", datetime.now())
-    print(f"Root node created with id: {root_node_id}")
+    if verbose: print(f"Root node created with id: {root_node_id}")
     # print content
     try:
         root_node = get_node_by_id(nodes, root_node_id)
     except Exception as e:
         print(f"Error getting node by id: {e}")
         root_node = None
-    print(f"node_content: {root_node.content}")
-    execute_mode_ii(nodes, root_node_id)
-    breakpoint()
+    if verbose: print(f"node_content: {root_node.content}")
+    return root_node_id
 
 def execute_mode_ii(nodes: list[schemas.NodeV2], active_node: str):
     """
@@ -88,13 +88,13 @@ def execute_mode_ii(nodes: list[schemas.NodeV2], active_node: str):
     )
 
     message = response.choices[0].message
+    new_nodes = []
     
     if hasattr(message, "tool_calls") and message.tool_calls:
         messages.append(message)
         for tool_call in message.tool_calls:
             if tool_call.function.name == "create_node":
                 args = json.loads(tool_call.function.arguments)
-                breakpoint()
                 child_id = create_node(
                     nodes=nodes,
                     name=args["name"],
@@ -103,11 +103,24 @@ def execute_mode_ii(nodes: list[schemas.NodeV2], active_node: str):
                     source="mode_ii",
                     timestamp=datetime.now()
                 )
+                new_nodes.append(child_id)
                 update_node_children(nodes, active_node, child_id)
                 print(f"Created new node: {args['name']}")
     
-    print_nodes(nodes)
-    return
+    if verbose: print_nodes(nodes)
+    if verbose: print(nodes)
+    return new_nodes
+
+
+def execute_mode_iii(nodes: list[schemas.NodeV2], active_node: str):
+    """
+    Executes mode III of the research agent, which expands knowledge by analyzing 
+    the situation and generating new insights for the active node.
+    """
+    if not active_node:
+        print("No active node selected")
+        return
+
 
 
 def process_chat(user_message: str, chat_history: list) -> dict:
@@ -182,7 +195,7 @@ def process_chat(user_message: str, chat_history: list) -> dict:
                         "metadata": {
                             "source": "Email",
                             "recipient": args.get("to"),
-                            "timestamp": datetime.utcnow().isoformat(),
+                            "timestamp": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
                         },
                     },
                 }
@@ -197,7 +210,7 @@ def process_chat(user_message: str, chat_history: list) -> dict:
                         "text": result_text,
                         "metadata": {
                             "source": "Perplexity",
-                            "timestamp": datetime.utcnow().isoformat(),
+                            "timestamp": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
                         },
                     },
                 }
@@ -218,7 +231,7 @@ def process_chat(user_message: str, chat_history: list) -> dict:
                         "text": text,
                         "metadata": {
                             "source": "LLM",
-                            "timestamp": datetime.utcnow().isoformat(),
+                            "timestamp": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
                         },
                     },
                 }
@@ -274,9 +287,21 @@ def process_chat(user_message: str, chat_history: list) -> dict:
     }
 
 if __name__ == "__main__":
+    queue = []
     nodes = []
     active_node = None
-    init_agent(nodes, active_node)
+    root_node_id = init_agent(nodes, active_node)
+    queue.append(root_node_id)
+    for i in range(6):
+        if queue:
+            active_node = queue.pop()
+            new_nodes = execute_mode_ii(nodes, active_node)
+            for node in new_nodes:
+                queue.append(node)
+    
+    print_nodes(nodes)
+    with open('nodes.json', 'w') as f:
+        json.dump([node.model_dump() for node in nodes], f, indent=2)
 
 
 # tools = [

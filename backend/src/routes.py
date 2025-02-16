@@ -38,7 +38,7 @@ def chat_endpoint(payload: schemas.ChatMessageCreate, db: Session = Depends(get_
         id=str(uuid.uuid4()),
         role="user",
         message=message_text,
-        timestamp=datetime.utcnow(),
+        timestamp=datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
     )
     db.add(user_msg)
     db.commit()
@@ -59,7 +59,7 @@ def chat_endpoint(payload: schemas.ChatMessageCreate, db: Session = Depends(get_
         id=str(uuid.uuid4()),
         role="assistant",
         message=result["assistant_message"],
-        timestamp=datetime.utcnow(),
+        timestamp=datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
     )
     db.add(assistant_msg)
     db.commit()

@@ -20,4 +20,4 @@ class ChatMessage(Base):
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     role = Column(String, nullable=False)  # "user" or "assistant"
     message = Column(Text, nullable=False)
-    timestamp = Column(DateTime, default=datetime.utcnow)
+    timestamp = Column(String, default=lambda: datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"))
