@@ -14,6 +14,7 @@ import {
 
 import { queryClient } from "./api/client";
 import { ChatBox } from "./components/ChatBox";
+import { ExpandBox } from "./components/ExpandBox";
 import {
   CustomNode,
   customNode,
@@ -86,6 +87,7 @@ function App() {
   }, []);
 
   const { setCenter } = useReactFlow();
+  const [selectedNode, setSelectedNode] = useState<CustomNode | null>(null);
 
   const fitViewNodes = useMemo(() => {
     const root = nodes.find((node) => node.data.isRoot);
@@ -99,6 +101,7 @@ function App() {
     if (selectedNodes.length === 1) {
       const node = nodes.find((node) => node.id === selectedNodes[0]);
       if (node) {
+        setSelectedNode(node);
         setCenter(
           node.position.x +
             (node.measured?.width ? node.measured.width / 2 : 0),
@@ -109,6 +112,8 @@ function App() {
             duration: 1000,
           }
         );
+      } else {
+        setSelectedNode(null);
       }
     }
   }, [nodes, selectedNodes, setCenter]);
@@ -116,12 +121,20 @@ function App() {
   return (
     <div className="w-screen h-screen">
       <div className="max-h-[10vh] min-h-[10vh]">
-        {isPending ? (
+        {/* {isPending ? (
           <div>Loading chat history...</div>
         ) : error ? (
           <div>Error: {JSON.stringify(error)}</div>
         ) : (
           <ChatBox initialMessages={initialMessages} />
+        )} */}
+        {isPending ? (
+          <div>Loading chat history...</div>
+        ) : selectedNode ? (
+          <ChatBox initialMessages={initialMessages} />
+        ) : null}
+        {selectedNode && (
+          <ExpandBox node={selectedNode as unknown as CustomNode} />
         )}
         {globalLoading && <div>Loading...</div>}
       </div>

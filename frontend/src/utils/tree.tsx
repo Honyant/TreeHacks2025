@@ -25,8 +25,8 @@ export type CustomNode = Node<
   components["schemas"]["ChatMessageOut"]["graph"][string]["type"]
 >;
 
-const nodeClassNames: {
-  [k in components["schemas"]["ChatMessageOut"]["graph"][string]["type"]]: React.ComponentProps<"div">["className"];
+export const nodeClassNames: {
+  [k in components["schemas"]["Graph"]["nodes"][number]["type"]]: React.ComponentProps<"div">["className"];
 } = {
   root: "bg-gray-100",
   text: "bg-blue-100",
