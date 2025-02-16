@@ -121,13 +121,6 @@ function App() {
   return (
     <div className="w-screen h-screen">
       <div className="max-h-[10vh] min-h-[10vh]">
-        {/* {isPending ? (
-          <div>Loading chat history...</div>
-        ) : error ? (
-          <div>Error: {JSON.stringify(error)}</div>
-        ) : (
-          <ChatBox initialMessages={initialMessages} />
-        )} */}
         {isPending ? (
           <div>Loading chat history...</div>
         ) : selectedNode ? (
