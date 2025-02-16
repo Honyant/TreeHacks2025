@@ -1,8 +1,18 @@
 import React, { useEffect, useRef, useState } from "react";
 
-export const ChatBox: React.FC = () => {
+
+export type Message = {
+  role: "user" | "assistant";
+  content: string;
+};
+
+interface ChatBoxProps {
+  initialMessages?: Message[];
+}
+
+export const ChatBox: React.FC<ChatBoxProps> = ({ initialMessages = [] }) => {
   const [isOpen, setIsOpen] = useState(true);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState("");
 
   const toggleChat = () => {
@@ -14,15 +24,10 @@ export const ChatBox: React.FC = () => {
       setMessages((prev) => [
         ...prev,
         { role: "user", content: input.trim() },
-        { role: "server", content: "server chat response" },
+        { role: "assistant", content: "server chat response" },
       ]);
       setInput("");
     }
-  };
-
-  type Message = {
-    role: "user" | "server";
-    content: string;
   };
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
@@ -56,11 +61,10 @@ export const ChatBox: React.FC = () => {
                   >
                     <div
                       className={`inline-block text-sm px-4 py-2 rounded-lg whitespace-normal text-wrap break-words max-w-[80%]
-                                                ${
-                                                  isUser
-                                                    ? "bg-green-100 text-gray-700 text-right" // user
-                                                    : "bg-blue-100 text-gray-700 text-left" // server
-                                                }`}
+                                                ${isUser
+                          ? "bg-green-100 text-gray-700 text-right" // user
+                          : "bg-blue-100 text-gray-700 text-left" // assistant
+                        }`}
                     >
                       {msg.content}
                     </div>
@@ -89,3 +93,4 @@ export const ChatBox: React.FC = () => {
     </div>
   );
 };
+
