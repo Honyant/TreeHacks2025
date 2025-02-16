@@ -1,27 +1,24 @@
 import { useMemo } from "react";
 import { useCallback, useEffect, useState } from "react";
 import {
+  applyEdgeChanges,
+  applyNodeChanges,
   ConnectionLineType,
   MiniMap,
   NodeProps,
+  OnEdgesChange,
+  OnNodesChange,
   OnSelectionChangeFunc,
   ReactFlow,
   SelectionMode,
-  useEdgesState,
-  useNodesState,
   useReactFlow,
 } from "@xyflow/react";
 import { useShallow } from "zustand/shallow";
 
-import { queryClient } from "./api/client";
+import { useClient } from "./api/client";
 import { ChatBox } from "./components/ChatBox";
 import { ExpandBox } from "./components/ExpandBox";
-import {
-  CustomNode,
-  customNode,
-  initialTree,
-  layoutElements,
-} from "./utils/tree";
+import { CustomNode, customNode } from "./utils/tree";
 import { components } from "./openapi";
 import { useStore } from "./store";
 
@@ -39,8 +36,8 @@ const nodeTypes: {
   root: customNode,
 };
 
-const { nodes: layoutedNodes, edges: layoutedEdges } =
-  layoutElements(initialTree);
+// const { nodes: layoutedNodes, edges: layoutedEdges } =
+//   layoutElements(initialTree);
 
 // import { components } from "../openapi";
 // const fetchedNodes: components["schemas"]["Graph"]["nodes"] = [];
@@ -49,16 +46,37 @@ const { nodes: layoutedNodes, edges: layoutedEdges } =
 const panOnDrag = [1, 2];
 
 function App() {
-  const { data, error, isPending } = queryClient.useQuery("post", "/start", {
-    body: {},
-  });
-
-  const { globalLoading, setSelectedNodeId } = useStore(
+  const {
+    nodes,
+    setNodes,
+    edges,
+    setEdges,
+    setGraph,
+    globalLoading,
+    setSelectedNodeId,
+  } = useStore(
     useShallow((state) => ({
+      nodes: state.nodes,
+      setNodes: state.setNodes,
+      edges: state.edges,
+      setEdges: state.setEdges,
+      setGraph: state.setGraph,
       globalLoading: state.globalLoading,
       setSelectedNodeId: state.setSelectedNodeId,
     }))
   );
+
+  const onNodesChange: OnNodesChange<CustomNode> = useCallback(
+    (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
+    [setNodes]
+  );
+  const onEdgesChange: OnEdgesChange = useCallback(
+    (changes) => setEdges((edgs) => applyEdgeChanges(changes, edgs)),
+    [setEdges]
+  );
+
+  const queryClient = useClient();
+  const { data, isPending } = queryClient.useQuery("post", "/start", {});
 
   const initialMessages = useMemo(() => {
     return (
@@ -69,22 +87,23 @@ function App() {
     );
   }, [data]);
 
-  const [nodes, setNodes, onNodesChange] =
-    useNodesState<CustomNode>(layoutedNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(layoutedEdges);
+  const { setCenter } = useReactFlow();
 
-  const onLayout = useCallback(
-    (direction: "TB" | "LR") => {
-      const { nodes: layoutedNodes, edges: layoutedEdges } = layoutElements(
-        initialTree,
-        direction
+  useEffect(() => {
+    if (data) {
+      const { nodes: layoutedNodes } = setGraph(data.graph);
+      const rootNode = layoutedNodes.find((node) => node.data.isRoot)!;
+
+      setCenter(
+        rootNode.position.x + (rootNode.width ? rootNode.width / 2 : 0),
+        rootNode.position.y + (rootNode.height ? rootNode.height / 2 : 0),
+        {
+          zoom: 1,
+          duration: 1000,
+        }
       );
-
-      setNodes([...layoutedNodes]);
-      setEdges([...layoutedEdges]);
-    },
-    [setNodes, setEdges]
-  );
+    }
+  }, [data, setNodes, setEdges, setCenter, setGraph]);
 
   const [selectedNodes, setSelectedNodes] = useState<string[]>([]);
 
@@ -100,7 +119,6 @@ function App() {
     [setSelectedNodeId]
   );
 
-  const { setCenter } = useReactFlow();
   const [selectedNode, setSelectedNode] = useState<CustomNode | null>(null);
 
   const fitViewNodes = useMemo(() => {

@@ -1,13 +1,49 @@
+import { useCallback } from "react";
+import { useShallow } from "zustand/shallow";
+
+import { useClient } from "../api/client";
+import { useStore } from "../store";
 import { CustomNode, nodeClassNames } from "../utils/tree";
 
-interface ChatBoxProps {
+interface ExpandBoxProps {
   node: CustomNode;
 }
 
-export const ExpandBox: React.FC<ChatBoxProps> = ({ node }) => {
+export const ExpandBox: React.FC<ExpandBoxProps> = ({ node }) => {
+  const queryClient = useClient();
   const { data, type } = node;
   const node_color =
     type !== undefined ? nodeClassNames[type] : nodeClassNames["text"];
+
+  const { selectedNodeId, setGlobalLoading, setGraph } = useStore(
+    useShallow((state) => ({
+      selectedNodeId: state.selectedNodeId,
+      setGlobalLoading: state.setGlobalLoading,
+      setGraph: state.setGraph,
+    }))
+  );
+
+  const generateMutation = queryClient.useMutation("post", "/generate", {});
+
+  const research = useCallback(async () => {
+    if (!selectedNodeId) return;
+    setGlobalLoading(true);
+    let data;
+    try {
+      data = await generateMutation.mutateAsync({
+        body: {
+          active_node_uuid: selectedNodeId,
+        },
+      });
+      setGlobalLoading(false);
+      if (data) {
+        setGraph(data.graph);
+      }
+    } catch (error) {
+      setGlobalLoading(false);
+      console.error(error);
+    }
+  }, [selectedNodeId, setGlobalLoading, generateMutation, setGraph]);
 
   return (
     <div>
@@ -26,6 +62,9 @@ export const ExpandBox: React.FC<ChatBoxProps> = ({ node }) => {
               <p className="text-black">{data.content}</p>
             </div>
           </div>
+          <button className="btn btn-primary" onClick={() => research()}>
+            Research
+          </button>
         </div>
       </div>
     </div>

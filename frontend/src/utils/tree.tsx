@@ -127,6 +127,8 @@ export const layoutElements = (
         y: node.y,
       },
       type: node.type ?? "text",
+      height: nodeHeight,
+      width: nodeWidth,
     };
 
     nodes.push(newNode);

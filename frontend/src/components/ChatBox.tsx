@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useShallow } from "zustand/shallow";
 
-import { queryClient } from "../api/client";
+import { useClient } from "../api/client";
 import { useStore } from "../store";
 
 export type Message = {
@@ -9,15 +9,17 @@ export type Message = {
   content: string;
 };
 
-interface ChatBoxProps {
+export interface ChatBoxProps {
   initialMessages?: Message[];
 }
 
 export const ChatBox: React.FC<ChatBoxProps> = ({ initialMessages = [] }) => {
-  const { setGlobalLoading, selectedNodeId } = useStore(
+  const queryClient = useClient();
+  const { setGlobalLoading, selectedNodeId, setGraph } = useStore(
     useShallow((state) => ({
       selectedNodeId: state.selectedNodeId,
       setGlobalLoading: state.setGlobalLoading,
+      setGraph: state.setGraph,
     }))
   );
 
@@ -36,6 +38,7 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ initialMessages = [] }) => {
   const toggleChat = () => setIsOpen((prev) => !prev);
 
   const hasInitialMessages = () => initialMessages.length > 0;
+  const chatMutation = queryClient.useMutation("post", "/chat", {});
 
   const handleSend = async () => {
     const trimmedInput = input.trim();
@@ -43,40 +46,30 @@ export const ChatBox: React.FC<ChatBoxProps> = ({ initialMessages = [] }) => {
     // add user message to state
     setMessages((prev) => [...prev, { role: "user", content: trimmedInput }]);
     setInput("");
+    setGlobalLoading(true);
 
     try {
-      const { data, isLoading, isFetched } = queryClient.useQuery(
-        "post",
-        "/chat",
-        {
-          body: {
-            role: "user",
-            message: trimmedInput,
-            node_id: selectedNodeId!,
-          },
-          refetchOnWindowFocus: false,
-        }
-      );
+      const data = await chatMutation.mutateAsync({
+        body: {
+          role: "user",
+          message: trimmedInput,
+          node_id: selectedNodeId!,
+        },
+      });
 
-      if (isLoading) {
-        setGlobalLoading(true);
-      }
-      if (isFetched) {
-        setGlobalLoading(false);
-      }
-
-      if (data) {
-        const chatHistory = data.chat_history || ["", ""];
-        const assistantMessage = chatHistory[chatHistory.length - 1];
-        if (assistantMessage && assistantMessage.role === "assistant") {
-          setMessages((prev) => [
-            ...prev,
-            { role: "assistant", content: assistantMessage.message },
-          ]);
-        }
+      setGraph(data.graph);
+      setGlobalLoading(false);
+      const chatHistory = data.chat_history || ["", ""];
+      const assistantMessage = chatHistory[chatHistory.length - 1];
+      if (assistantMessage && assistantMessage.role === "assistant") {
+        setMessages((prev) => [
+          ...prev,
+          { role: "assistant", content: assistantMessage.message },
+        ]);
       }
     } catch (error) {
       console.error("Error sending message:", error);
+      setGlobalLoading(false);
     }
   };
 
