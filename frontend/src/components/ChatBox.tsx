@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 
 import { queryClient } from "../api/client";
+import { useStore } from "../store";
 
 export type Message = {
   role: "user" | "assistant";
@@ -9,13 +10,11 @@ export type Message = {
 
 interface ChatBoxProps {
   initialMessages?: Message[];
-  setGlobalLoading: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export const ChatBox: React.FC<ChatBoxProps> = ({
-  initialMessages = [],
-  setGlobalLoading,
-}) => {
+export const ChatBox: React.FC<ChatBoxProps> = ({ initialMessages = [] }) => {
+  const setGlobalLoading = useStore((state) => state.setGlobalLoading);
+
   const [isOpen, setIsOpen] = useState(true);
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState("");
