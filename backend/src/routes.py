@@ -31,8 +31,6 @@ def start():
 
     # if not RAG_client or not RAG_collection:
     # RAG_client, RAG_collection = init_rag()
-    
-    RAG_client, RAG_collection = init_rag()
 
     root_node = init_agent(nodes, None)
     # set found node id to 0

@@ -25,7 +25,7 @@ perplexity_client = OpenAI(api_key=os.getenv("PERPLEXITY_API_KEY"), base_url="ht
 
 
 def init_agent(nodes: list[schemas.NodeV2], active_node: str):
-    brief = load_brief("demo/brief.txt")
+    brief = load_brief("demo/ukraine_brief.txt")
     init_brief_prompt = """
     You are helping create a root node for a research project. Given a project brief:
     1. Generate a 5-word title that captures the key focus
