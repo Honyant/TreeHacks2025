@@ -59,7 +59,7 @@ def init_agent(nodes: list[schemas.NodeV2], active_node: str):
     return root_node_id
 
 
-def execute_mode_i(nodes: list[schemas.NodeV2], active_node: str):
+def execute_mode_i(nodes: list[schemas.NodeV2], active_node: str, collection):
     """
     Executes mode I of the research agent, which expands knowledge by using
     tools to gather information.
@@ -99,7 +99,6 @@ def execute_mode_i(nodes: list[schemas.NodeV2], active_node: str):
     )
     message = response.choices[0].message
     new_nodes = []
-    breakpoint()
 
     if hasattr(message, "tool_calls") and message.tool_calls:
         messages.append(message)
@@ -119,7 +118,7 @@ def execute_mode_i(nodes: list[schemas.NodeV2], active_node: str):
                 new_nodes.append(new_node_id)
             elif tool_call.function.name == "retrieve":
                 args = json.loads(tool_call.function.arguments)
-                result = query_rag(args.get("query", ""))
+                result = query_rag(args.get("query", ""), collection)
                 new_node_id = create_node(
                     nodes=nodes,
                     name=args["name"],
@@ -169,7 +168,6 @@ def execute_mode_i(nodes: list[schemas.NodeV2], active_node: str):
                 current_node.children.append(new_node_id)
                 new_nodes.append(new_node_id)
 
-    breakpoint()
     if verbose: print_nodes(nodes)
     return new_nodes
 
@@ -227,7 +225,7 @@ def execute_mode_ii(nodes: list[schemas.NodeV2], active_node: str):
                 )
                 new_nodes.append(child_id)
                 update_node_children(nodes, active_node, child_id)
-                print(f"Created new node: {args['name']}")
+                if verbose: print(f"Created new node: {args['name']}")
     
     if verbose: print_nodes(nodes)
     if verbose: print(nodes)
@@ -851,12 +849,29 @@ if __name__ == "__main__":
     active_node = None
     root_node_id = init_agent(nodes, active_node)
     queue.append(root_node_id)
-    for i in range(5):
+    for i in range(3):
+        if queue:
+            active_node = queue.pop(0)
+            new_nodes = execute_mode_ii(nodes, active_node)
+            for node in new_nodes:
+                queue.append(node)
+    
+    queue = queue [:4]
+
+    for i in range(3):
         if queue:
             active_node = queue.pop(0)
             new_nodes = execute_mode_i(nodes, active_node)
             for node in new_nodes:
                 queue.append(node)
+    
+    for i in range(3):
+        if queue:
+            active_node = queue.pop(0)
+            new_nodes = execute_mode_ii(nodes, active_node)
+            for node in new_nodes:
+                queue.append(node)
+    
     
     print_nodes(nodes)
     export_nodes(nodes, "nodes.json")

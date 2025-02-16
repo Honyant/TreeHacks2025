@@ -27,9 +27,8 @@ def query_perplexity(client: OpenAI, query: str) -> str:
     print(f"[Perplexity API] Response: {response.choices[0]}")
     return response.choices[0].message.content
 
-def query_rag(query: str) -> str:
-    global RAG_collection
-    response = RAG_collection.query.near_text(query)
+def query_rag(query: str, collection) -> str:
+    response = collection.query.near_text(query)
     return response.objects[0].properties["text"]
 
 def call_phone_number(phone_number: str) -> str:

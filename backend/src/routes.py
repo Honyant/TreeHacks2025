@@ -8,7 +8,7 @@ from typing import List
 import models
 import schemas
 import engine as processing_engine
-from engine import init_agent, execute_mode_ii
+from engine import init_agent, execute_mode_ii, execute_mode_i
 from database import SessionLocal
 from utils import get_db, get_node_by_id
 from RAG import init_rag
@@ -31,6 +31,8 @@ def start():
 
     # if not RAG_client or not RAG_collection:
     # RAG_client, RAG_collection = init_rag()
+    
+    RAG_client, RAG_collection = init_rag()
 
     root_node = init_agent(nodes, None)
     # set found node id to 0
@@ -49,6 +51,7 @@ def start():
 def generate(payload: schemas.GeneratePayload):
     global nodes
     global chat_messages
+    global RAG_collection
     print(nodes)
     active_node = payload.active_node_uuid
     found_node = get_node_by_id(nodes, active_node)
@@ -57,7 +60,7 @@ def generate(payload: schemas.GeneratePayload):
         execute_mode_ii(nodes, active_node)
     elif found_node and found_node.metadata.source == "mode_ii":
         print("Executing mode i")
-        # execute_mode_i(nodes, active_node)
+        execute_mode_i(nodes, active_node, RAG_collection)
     elif found_node and found_node.metadata.source == "mode_i":
         if found_node.type == "question":
             pass
