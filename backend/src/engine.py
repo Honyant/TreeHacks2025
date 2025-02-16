@@ -247,9 +247,6 @@ def execute_mode_iii(nodes: list[schemas.NodeV2], active_node: str, user_message
     if not current_node:
         print(f"Could not find active node with id: {active_node}")
         return
-    
-    
-
 
 def process_chat(user_message: str, chat_history: list) -> dict:
     """

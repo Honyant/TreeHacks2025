@@ -80,10 +80,9 @@ Please only output tool uses and nothing else.
 Include at least three different types of tool uses in your output.
 
 You have access to the following tools:
-[ask, search, retrieve, email, phone]
+[ask, search, email, phone]
 - ask is used to ask a question to the user.
 - search uses Perplexity to search the internet for relevant information.
-- retrieve uses a retrieval-augmented generation workflow to retrieve information from proprietary data.
 - email is used to send an email to a given recipient with a subject and message.
 - phone is used to call a given individual using a separate phone AI agent.
 
@@ -91,6 +90,13 @@ DO NOT ONLY USE THE PHONE TOOL.
 DO NOT CALL MORE THAN ONE PERSON BECAUSE PEOPLE ARE BUSY.
 CREATE AT LEAST FIVE TOOL CALLS IN YOUR OUTPUT.
 """
+# You have access to the following tools:
+# [ask, search, retrieve, email, phone]
+# - ask is used to ask a question to the user.
+# - search uses Perplexity to search the internet for relevant information.
+# - retrieve uses a retrieval-augmented generation workflow to retrieve information from proprietary data.
+# - email is used to send an email to a given recipient with a subject and message.
+# - phone is used to call a given individual using a separate phone AI agent.
 
 mode_ii = """
 You are an investigative journalist's research agent.

@@ -28,9 +28,15 @@ def start():
     global chat_messages
     global RAG_client
     global RAG_collection
+<<<<<<< Updated upstream
 
     # if not RAG_client or not RAG_collection:
     # RAG_client, RAG_collection = init_rag()
+=======
+    
+    # if not RAG_client or not RAG_collection:
+    #     RAG_client, RAG_collection = init_rag()
+>>>>>>> Stashed changes
 
     root_node = init_agent(nodes, None)
     # set found node id to 0

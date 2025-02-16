@@ -6,6 +6,7 @@ import argparse
 from fastapi import FastAPI, WebSocket, BackgroundTasks
 from fastapi.responses import JSONResponse
 from fastapi.websockets import WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
 from twilio.rest import Client
 import websockets
 from dotenv import load_dotenv
@@ -22,7 +23,7 @@ TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
 TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
 PHONE_NUMBER_FROM = os.getenv("PHONE_NUMBER_FROM")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-raw_domain = os.getenv("DOMAIN", "")
+raw_domain = os.getenv("NGROK_DOMAIN", "")
 DOMAIN = re.sub(
     r"(^\w+:|^)\/\/|\/+$", "", raw_domain
 )  # Strip protocols and trailing slashes from DOMAIN
@@ -34,7 +35,7 @@ print(f"OPENAI_API_KEY: {OPENAI_API_KEY}")
 print(f"DOMAIN: {DOMAIN}")
 PORT = int(os.getenv("PORT", 6060))
 SYSTEM_MESSAGE = (
-    "You are an AI voice assistant to ask the user questions and gather information."
+    "You are an AI voice assistant to ask the user questions and gather information. You are talking to an expert on the topic of the call: {topic}. You will not ask the user clarifying questions, you will ask the user to answer the question directly."
 )
 TOPIC = "Your day"
 VOICE = "alloy"
@@ -50,6 +51,15 @@ LOG_EVENT_TYPES = [
 ]
 
 app = FastAPI()
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
 
 if not (
     TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN and PHONE_NUMBER_FROM and OPENAI_API_KEY
@@ -128,10 +138,10 @@ async def handle_media_stream(websocket: WebSocket):
                 async for openai_message in openai_ws:
                     response = json.loads(openai_message)
                     if response["type"] in LOG_EVENT_TYPES:
-                        # print(f"Received event: {response['type']}", response)
+                        print(f"Received event: {response['type']}", response)
                         pass
                     if response["type"] == "session.updated":
-                        # print("Session updated successfully:", response)
+                        print("Session updated successfully:", response)
                         pass
                     if response["type"] == "response.audio.delta" and response.get(
                         "delta"

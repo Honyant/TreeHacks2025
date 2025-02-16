@@ -1,11 +1,7 @@
-import weaviate
-import voyageai
 import os
+import voyageai
 from typing import List, Dict
 from dotenv import load_dotenv
-
-from weaviate.classes.config import Configure
-from weaviate.classes.query import MetadataQuery
 from unstructured.partition.auto import partition
 from unstructured.partition.pdf import partition_pdf
 from unstructured.partition.html import partition_html
@@ -13,21 +9,34 @@ from unstructured.chunking.title import chunk_by_title
 
 load_dotenv()
 
+
 def setup_db():
+    # Import weaviate locally to avoid circular dependency issues
+    import weaviate
+
     client = weaviate.connect_to_local()
     collection_name = "demo"
-    client.collections.delete(collection_name)
 
+    # Attempt to delete the collection if it exists
     try:
+        client.collections.delete(collection_name)
+    except Exception as e:
+        print(f"Could not delete collection (it might not exist yet): {e}")
+
+    # Create a new collection using a local import for Configure
+    try:
+        from weaviate.classes.config import Configure
+
         client.collections.create(
-            name=collection_name,
-            vectorizer_config=Configure.Vectorizer.none()
+            name=collection_name, vectorizer_config=Configure.Vectorizer.none()
         )
         collection = client.collections.get(collection_name)
-    except Exception:
+    except Exception as e:
+        print(f"Error creating collection: {e}")
         collection = client.collections.get(collection_name)
 
     return client, collection
+
 
 def load_pdfs(dir) -> List[Dict]:
     """
@@ -36,7 +45,7 @@ def load_pdfs(dir) -> List[Dict]:
     """
     documents = []
     for filename in os.listdir(dir):
-        if filename.endswith('.pdf'):
+        if filename.endswith(".pdf"):
             file_path = os.path.join(dir, filename)
             elements = partition_pdf(
                 filename=file_path,
@@ -46,6 +55,7 @@ def load_pdfs(dir) -> List[Dict]:
             )
             documents.extend(elements)
     return documents
+
 
 def preprocess_chunks(elements):
     embedding_objects = []
@@ -60,7 +70,7 @@ def preprocess_chunks(elements):
             "page_number": chunk.to_dict()["metadata"]["page_number"],
             "last_modified": chunk.to_dict()["metadata"]["last_modified"],
             "languages": chunk.to_dict()["metadata"]["languages"],
-            "filetype": chunk.to_dict()["metadata"]["filetype"]
+            "filetype": chunk.to_dict()["metadata"]["filetype"],
         }
         embedding_object.append(chunk.to_dict()["text"])
 
@@ -68,27 +78,33 @@ def preprocess_chunks(elements):
         embedding_metadatas.append(metedata_dict)
     return embedding_objects, embedding_metadatas
 
+
 def embed_data(embedding_objects, embedding_metadatas, collection):
     vo = voyageai.Client()
-    result = vo.multimodal_embed(embedding_objects, model="voyage-multimodal-3", truncation=False)
+    result = vo.multimodal_embed(
+        embedding_objects, model="voyage-multimodal-3", truncation=False
+    )
     with collection.batch.dynamic() as batch:
         for i, data_row in enumerate(embedding_objects):
             batch.add_object(
-                properties=embedding_metadatas[i],
-                vector=result.embeddings[i]
+                properties=embedding_metadatas[i], vector=result.embeddings[i]
             )
+
 
 def query(question, collection):
     vo = voyageai.Client()
-    query_embedding = vo.multimodal_embed([[question]], model="voyage-multimodal-3", truncation=False)
+    query_embedding = vo.multimodal_embed(
+        [[question]], model="voyage-multimodal-3", truncation=False
+    )
     response = collection.query.near_vector(
         near_vector=query_embedding.embeddings[0],
         limit=5,
-        return_metadata=MetadataQuery(distance=True)
+        return_metadata=MetadataQuery(distance=True),
     )
     for o in response.objects:
-        print(o.properties['text'])
+        print(o.properties["text"])
         print(o.metadata.distance)
+
 
 def init_rag():
     client, collection = setup_db()
@@ -96,6 +112,7 @@ def init_rag():
     embedding_objects, embedding_metadatas = preprocess_chunks(elements)
     embed_data(embedding_objects, embedding_metadatas, collection)
     return client, collection
+
 
 if __name__ == "__main__":
     client, collection = setup_db()
