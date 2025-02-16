@@ -64,7 +64,7 @@ const entitreeSettings = {
 export const layoutElements = (
   tree: typeof initialTree,
   direction: "TB" | "LR" = "LR",
-  rootId: string = "285ab462-37cf-40b2-a654-3a94d7ef8e05"
+  rootId: string = "099ae778-8092-408d-8738-105741fbfb82"
 ) => {
   const isTreeHorizontal = direction === "LR";
 
