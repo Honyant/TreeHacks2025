@@ -10,5 +10,3 @@ voyageai
 unstructured
 unstructured_inference
 unstructured_pytesseract
-pi-heif
-pdf2image
