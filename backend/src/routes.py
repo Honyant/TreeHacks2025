@@ -24,6 +24,7 @@ RAG_collection = None
 
 @router.post("/start", response_model=schemas.ChatMessageOut)
 def start():
+    print("Starting")
     global nodes
     global chat_messages
     global RAG_client
@@ -42,6 +43,7 @@ def start():
     chat_history = [schemas.ChatMessage.model_validate(msg) for msg in chat_messages]
     nodes_dict = {node.id: schemas.NodeV2.model_validate(node) for node in nodes}
     output = schemas.ChatMessageOut(chat_history=chat_history, graph=nodes_dict)
+    print("Finished Start")
     return output
 
 
