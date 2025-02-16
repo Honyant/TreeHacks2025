@@ -17,7 +17,7 @@ class NodeMetadata(BaseModel):
     timestamp: datetime
 
 
-class NodeV2(BaseModel):
+class Node(BaseModel):
     id: str
     name: str  # title of the node
     type: NodeType  # type of the node
@@ -25,27 +25,13 @@ class NodeV2(BaseModel):
     metadata: NodeMetadata
     children: List[str]  # ids of the children nodes
 
+    model_config = {"from_attributes": True}
+
 
 # deprecate below.
 class NodeContent(BaseModel):
     text: str
     metadata: NodeMetadata
-
-
-class NodeBase(BaseModel):
-    node_class: str
-    title: str
-    content: NodeContent
-
-
-class NodeCreate(NodeBase):
-    pass
-
-
-class Node(NodeBase):
-    id: str
-
-    model_config = {"from_attributes": True}
 
 
 class EdgeBase(BaseModel):
