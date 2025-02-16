@@ -24,16 +24,23 @@ def generate(payload: schemas.GeneratePayload):
     global chat_messages
     print(nodes)
     active_node = payload.active_node_uuid
-    if active_node != "0":
+    if active_node == "0":
+        init_agent(nodes, None)
+    else:
         found_node = get_node_by_id(nodes, active_node)
+        
         if found_node and found_node.metadata.source == "mode_ii":
             print("Executing mode i")
             #execute_mode_i(nodes, active_node)
+        elif found_node and found_node.metadata.source == "mode_i":
+            if found_node.type == "question":
+                pass
+            elif found_node.type == "email":
+                print("Executing email")
+            elif found_node.type == "call":
+                print("Executing call")
         else:
             execute_mode_ii(nodes, active_node)
-    else:
-        root_node = init_agent(nodes, None)
-        print(root_node)
 
     
     # create output object:
@@ -52,16 +59,17 @@ def chat_endpoint(payload: schemas.ChatMessageCreate):
     global chat_messages
     message = payload.message
     role = payload.role
-    timestamp = payload.timestamp
     id = payload.id
 
+    # if the node is a question, we modify the question node and add on the response from the user:
     chat_messages.append(schemas.ChatMessage(
         id=id,
         message=message,
-        role=role,
-        timestamp=timestamp
+        role=role
     ))
-
+    found_node = get_node_by_id(nodes, id)
+    if found_node and found_node.type == "question":
+        found_node.content = message
 
     # create output object:
     chat_history = [schemas.ChatMessage.model_validate(msg) for msg in chat_messages]
