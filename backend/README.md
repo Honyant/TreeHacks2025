@@ -65,14 +65,18 @@ The project is split into multiple modules:
 
    In `.env`, set the `OPENAI_API_KEY` environment variable to your OpenAI API key.
 
-3. **Run the App:**
+3. **Configure the RAG Environment:**
+   
+   `docker run -p 8080:8080 -p 50051:50051 cr.weaviate.io/semitechnologies/weaviate:1.28.4`
+
+5. **Run the App:**
 
    ```bash
    cd src
    uvicorn main:app --reload
    ```
 
-4. **Access Documentation:**
+6. **Access Documentation:**
 
    Navigate to [http://localhost:8000/docs](http://localhost:8000/docs) for interactive API docs.
 
