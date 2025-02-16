@@ -8,14 +8,16 @@ import { nodeClassNames } from "../utils/tree";
 export const ExpandBox: React.FC = () => {
   const queryClient = useClient();
 
-  const { nodes, selectedNodeId, setGlobalLoading, setGraph } = useStore(
-    useShallow((state) => ({
-      nodes: state.nodes,
-      selectedNodeId: state.selectedNodeId,
-      setGlobalLoading: state.setGlobalLoading,
-      setGraph: state.setGraph,
-    }))
-  );
+  const { nodes, selectedNodeId, globalLoading, setGlobalLoading, setGraph } =
+    useStore(
+      useShallow((state) => ({
+        nodes: state.nodes,
+        selectedNodeId: state.selectedNodeId,
+        globalLoading: state.globalLoading,
+        setGlobalLoading: state.setGlobalLoading,
+        setGraph: state.setGraph,
+      }))
+    );
 
   const generateMutation = queryClient.useMutation("post", "/generate", {});
 
@@ -63,8 +65,11 @@ export const ExpandBox: React.FC = () => {
               <p className="text-black">{data.content}</p>
             </div>
           </div>
-          <button className="btn btn-primary" onClick={() => research()}>
-            Research
+          <button
+            className="btn btn-primary"
+            onClick={() => !globalLoading && research()}
+          >
+            {globalLoading ? "Loading..." : "Research"}
           </button>
         </div>
       </div>

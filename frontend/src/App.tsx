@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { useCallback, useEffect } from "react";
 import {
   applyEdgeChanges,
@@ -68,16 +67,32 @@ function App() {
     }))
   );
 
+  const { setCenter } = useReactFlow();
+
   const onNodesChange: OnNodesChange<CustomNode> = useCallback(
-    (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
-    [setNodes]
+    (changes) => {
+      if (changes.some((c) => c.type === "add")) {
+        const selectedNode = nodes.find((node) => node.id === selectedNodeId);
+        if (!selectedNode) return;
+        setCenter(
+          selectedNode.position.x +
+            (selectedNode.width ? selectedNode.width / 2 : 0),
+          selectedNode.position.y +
+            (selectedNode.height ? selectedNode.height / 2 : 0),
+          {
+            zoom: 0.7,
+            duration: 1000,
+          }
+        );
+      }
+      setNodes((nds) => applyNodeChanges(changes, nds));
+    },
+    [setNodes, nodes, setCenter, selectedNodeId]
   );
   const onEdgesChange: OnEdgesChange = useCallback(
     (changes) => setEdges((edgs) => applyEdgeChanges(changes, edgs)),
     [setEdges]
   );
-
-  const { setCenter } = useReactFlow();
 
   const queryClient = useClient();
   const startMutation = queryClient.useMutation("post", "/start", {});
@@ -124,14 +139,6 @@ function App() {
     },
     [setSelectedNodeId, setCenter]
   );
-
-  const fitViewNodes = useMemo(() => {
-    const root = nodes.find((node) => node.data.isRoot);
-    const children = nodes
-      .filter((node) => root?.data.children?.includes(node.id))
-      .map((node) => ({ id: node.id }));
-    return children.slice(2);
-  }, [nodes]);
 
   return (
     <div className="w-screen h-screen">
