@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from typing import List
@@ -11,12 +11,14 @@ import engine as processing_engine
 from engine import init_agent, execute_mode_ii
 from database import SessionLocal
 from utils import get_db, get_node_by_id
-
+from external_functions import call_phone_number
 
 router = APIRouter()
 
 nodes = []
 chat_messages = []
+
+
 @router.post("/start", response_model=schemas.ChatMessageOut)
 def start():
     global nodes
@@ -30,11 +32,9 @@ def start():
     # create output object:
     chat_history = [schemas.ChatMessage.model_validate(msg) for msg in chat_messages]
     nodes_dict = {node.id: schemas.NodeV2.model_validate(node) for node in nodes}
-    output = schemas.ChatMessageOut(
-        chat_history=chat_history,
-        graph=nodes_dict
-    )
+    output = schemas.ChatMessageOut(chat_history=chat_history, graph=nodes_dict)
     return output
+
 
 @router.post("/generate", response_model=schemas.ChatMessageOut)
 def generate(payload: schemas.GeneratePayload):
@@ -48,7 +48,7 @@ def generate(payload: schemas.GeneratePayload):
         execute_mode_ii(nodes, active_node)
     elif found_node and found_node.metadata.source == "mode_ii":
         print("Executing mode i")
-        #execute_mode_i(nodes, active_node)
+        # execute_mode_i(nodes, active_node)
     elif found_node and found_node.metadata.source == "mode_i":
         if found_node.type == "question":
             pass
@@ -59,14 +59,10 @@ def generate(payload: schemas.GeneratePayload):
     else:
         execute_mode_ii(nodes, active_node)
 
-    
     # create output object:
     chat_history = [schemas.ChatMessage.model_validate(msg) for msg in chat_messages]
     nodes_dict = {node.id: schemas.NodeV2.model_validate(node) for node in nodes}
-    output = schemas.ChatMessageOut(
-        chat_history=chat_history,
-        graph=nodes_dict
-    )
+    output = schemas.ChatMessageOut(chat_history=chat_history, graph=nodes_dict)
     return output
 
 
@@ -79,13 +75,15 @@ def chat_endpoint(payload: schemas.ChatMessageCreate):
     id = payload.node_id
 
     # if the node is a question, we modify the question node and add on the response from the user:
-    chat_messages.append(schemas.ChatMessage(
-        id=str(uuid.uuid4()),
-        role=role,
-        node_id=id,
-        message=message,
-        timestamp=datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
-    ))
+    chat_messages.append(
+        schemas.ChatMessage(
+            id=str(uuid.uuid4()),
+            role=role,
+            node_id=id,
+            message=message,
+            timestamp=datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
+        )
+    )
     found_node = get_node_by_id(nodes, id)
     if found_node and found_node.type == "question":
         found_node.content = message
@@ -93,11 +91,9 @@ def chat_endpoint(payload: schemas.ChatMessageCreate):
     # create output object:
     chat_history = [schemas.ChatMessage.model_validate(msg) for msg in chat_messages]
     nodes_dict = {node.id: schemas.NodeV2.model_validate(node) for node in nodes}
-    output = schemas.ChatMessageOut(
-        chat_history=chat_history,
-        graph=nodes_dict
-    )
+    output = schemas.ChatMessageOut(chat_history=chat_history, graph=nodes_dict)
     return output
+
 
 @router.post("/upload", response_model=schemas.ChatMessageOut)
 def upload_endpoint(payload: schemas.FileUpload):
@@ -120,7 +116,7 @@ def upload_endpoint(payload: schemas.FileUpload):
             source="upload",
             timestamp=datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
         ),
-        children=[]
+        children=[],
     )
     # add file to be a child of the active node
     active_node = get_node_by_id(nodes, active_node_uuid)
@@ -132,11 +128,44 @@ def upload_endpoint(payload: schemas.FileUpload):
     # create output object:
     chat_history = [schemas.ChatMessage.model_validate(msg) for msg in chat_messages]
     nodes_dict = {node.id: schemas.NodeV2.model_validate(node) for node in nodes}
-    output = schemas.ChatMessageOut(
-        chat_history=chat_history,
-        graph=nodes_dict
-    )
+    output = schemas.ChatMessageOut(chat_history=chat_history, graph=nodes_dict)
     return output
+
+
+@router.get("/phonecall/{phone_number}")
+def phonecall_endpoint(phone_number: str, background_tasks: BackgroundTasks):
+    # Start the phone call in a non-blocking way
+    id_to_update = str(uuid.uuid4())
+
+    # Create a background task to handle the call result and update nodes
+    def process_call_result(phone_number: str):
+        global nodes
+        print(f"[Phone Call] Processing call result for {phone_number}")
+        call_result = call_phone_number(phone_number)
+        print(f"[Phone Call] Call result: {call_result}")
+        # Create a new node for the phone call
+        call_node = schemas.NodeV2(
+            id=id_to_update,
+            name=f"Phone call to {phone_number}",
+            type="call",
+            content=call_result,
+            metadata=schemas.NodeMetadata(
+                source="phone_call",
+                timestamp=datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
+            ),
+            children=[],
+        )
+        nodes.append(call_node)
+        print(f"[Phone Call] Added call node to nodes: {id_to_update}")
+
+    # Add the task to background_tasks
+    background_tasks.add_task(process_call_result, phone_number)
+
+    return {
+        "status": "Call initiated",
+        "message": f"Calling {phone_number}",
+        "node_id": id_to_update,
+    }
 
 
 # @router.post("/chat", response_model=schemas.ChatMessageOut)

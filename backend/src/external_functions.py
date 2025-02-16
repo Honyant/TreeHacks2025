@@ -30,6 +30,8 @@ def query_perplexity(client: OpenAI, query: str) -> str:
 
 def call_phone_number(phone_number: str) -> str:
     print(f"[Phone Call] Calling {phone_number}")
+    import time
+    time.sleep(10)
     return f"Phone call to {phone_number} simulated."
 
 def send_email(to: str, subject: str, body: str) -> str:

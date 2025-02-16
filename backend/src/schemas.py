@@ -8,7 +8,6 @@ class ModelOutput(BaseModel):
     title: str
     content: str
 
-
 class NodeType(str, Enum):  # to be displayed differently in the UI
     root = "root"
     text = "text"  # mode ii
