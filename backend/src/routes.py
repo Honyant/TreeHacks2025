@@ -17,6 +17,24 @@ router = APIRouter()
 
 nodes = []
 chat_messages = []
+@router.post("/start", response_model=schemas.ChatMessageOut)
+def start():
+    global nodes
+    global chat_messages
+    root_node = init_agent(nodes, None)
+    # set found node id to 0
+    found_node = get_node_by_id(nodes, root_node)
+    found_node.id = "0"
+    found_node.type = "root"
+
+    # create output object:
+    chat_history = [schemas.ChatMessage.model_validate(msg) for msg in chat_messages]
+    nodes_dict = {node.id: schemas.NodeV2.model_validate(node) for node in nodes}
+    output = schemas.ChatMessageOut(
+        chat_history=chat_history,
+        graph=nodes_dict
+    )
+    return output
 
 @router.post("/generate", response_model=schemas.ChatMessageOut)
 def generate(payload: schemas.GeneratePayload):
@@ -24,23 +42,22 @@ def generate(payload: schemas.GeneratePayload):
     global chat_messages
     print(nodes)
     active_node = payload.active_node_uuid
-    if active_node == "0":
-        init_agent(nodes, None)
+    found_node = get_node_by_id(nodes, active_node)
+    if found_node.id == "0":
+        print("Executing mode ii")
+        execute_mode_ii(nodes, active_node)
+    elif found_node and found_node.metadata.source == "mode_ii":
+        print("Executing mode i")
+        #execute_mode_i(nodes, active_node)
+    elif found_node and found_node.metadata.source == "mode_i":
+        if found_node.type == "question":
+            pass
+        elif found_node.type == "email":
+            print("Executing email")
+        elif found_node.type == "call":
+            print("Executing call")
     else:
-        found_node = get_node_by_id(nodes, active_node)
-        
-        if found_node and found_node.metadata.source == "mode_ii":
-            print("Executing mode i")
-            #execute_mode_i(nodes, active_node)
-        elif found_node and found_node.metadata.source == "mode_i":
-            if found_node.type == "question":
-                pass
-            elif found_node.type == "email":
-                print("Executing email")
-            elif found_node.type == "call":
-                print("Executing call")
-        else:
-            execute_mode_ii(nodes, active_node)
+        execute_mode_ii(nodes, active_node)
 
     
     # create output object:
