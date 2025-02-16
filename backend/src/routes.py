@@ -12,12 +12,14 @@ from database import SessionLocal
 
 router = APIRouter()
 
+
 def get_db():
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
+
 
 @router.post("/chat", response_model=schemas.ChatMessageOut)
 def chat_endpoint(payload: schemas.ChatMessageCreate, db: Session = Depends(get_db)):
@@ -98,7 +100,7 @@ def chat_endpoint(payload: schemas.ChatMessageCreate, db: Session = Depends(get_
 
 
 @router.post("/nodes", response_model=schemas.Node)
-def add_node(node: schemas.NodeCreate, db: Session = Depends(get_db)):
+def add_node(node: schemas.NodeV2, db: Session = Depends(get_db)):
     """
     Manually add a node to the research graph.
     """

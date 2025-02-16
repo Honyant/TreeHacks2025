@@ -2,28 +2,47 @@ import { memo } from "react";
 import { type Edge, type Node, type NodeProps, Position } from "@xyflow/react";
 import { Handle } from "@xyflow/react";
 import { layoutFromMap } from "entitree-flex";
+import { twMerge } from "tailwind-merge";
+
 import { components } from "../openapi";
 
 interface Tree {
-  [k: string]: components["schemas"][];
+  [k: string]: Partial<components["schemas"]["Graph"]["nodes"][number]>;
 }
+
+export type CustomNode = Node<
+  Partial<
+    Omit<components["schemas"]["Graph"]["nodes"][number], "type"> & {
+      label: string;
+      direction: string;
+      isRoot: boolean;
+    }
+  >,
+  components["schemas"]["Graph"]["nodes"][number]["type"]
+>;
+
+const nodeClassNames: {
+  [k in components["schemas"]["Graph"]["nodes"][number]["type"]]: React.ComponentProps<"div">["className"];
+} = {
+  text: "bg-blue-100",
+  image: "bg-green-100",
+  link: "bg-yellow-100",
+  audio: "bg-red-100",
+};
 
 export const initialTree: Tree = {
   1: {
     id: "1",
     name: "root",
-    type: "input",
+    type: "text",
     children: ["2", "3"],
-    siblings: ["8"],
-    spouses: ["10"],
   },
   2: { id: "2", name: "child2" },
   3: {
     id: "3",
     name: "child3",
+    type: "audio",
     children: ["4", "5", "11", "12", "13", "14", "15"],
-    siblings: ["9"],
-    spouses: ["6"],
   },
   4: { id: "4", name: "grandChild4" },
   5: { id: "5", name: "grandChild5" },
@@ -31,22 +50,19 @@ export const initialTree: Tree = {
   12: { id: "12", name: "grandChild5" },
   13: { id: "13", name: "grandChild5" },
   14: { id: "14", name: "grandChild5" },
-  15: { id: "15", name: "grandChild5" },
-  6: { id: "6", name: "spouse of child 3", isSpouse: true },
+  15: { id: "15", name: "grandChild5", type: "image" },
+  6: { id: "6", type: "link", name: "spouse of child 3" },
   8: {
     id: "8",
     name: "root sibling",
-    isSibling: true,
   },
   9: {
     id: "9",
     name: "child3 sibling",
-    isSibling: true,
   },
   10: {
     id: "10",
     name: "root spouse",
-    isSpouse: true,
   },
 };
 
@@ -111,54 +127,26 @@ export const layoutElements = (
     newEdge.animated = true;
 
     // Check if target node is spouse or sibling
-    const isTargetSpouse = !!edge.target.isSpouse;
-    const isTargetSibling = !!edge.target.isSibling;
-
-    if (isTargetSpouse) {
-      newEdge.sourceHandle = isTreeHorizontal ? Bottom : Right;
-      newEdge.targetHandle = isTreeHorizontal ? Top : Left;
-    } else if (isTargetSibling) {
-      newEdge.sourceHandle = isTreeHorizontal ? Top : Left;
-      newEdge.targetHandle = isTreeHorizontal ? Bottom : Right;
-    } else {
-      newEdge.sourceHandle = isTreeHorizontal ? Right : Bottom;
-      newEdge.targetHandle = isTreeHorizontal ? Left : Top;
-    }
+    newEdge.sourceHandle = isTreeHorizontal ? Right : Bottom;
+    newEdge.targetHandle = isTreeHorizontal ? Left : Top;
 
     edges.push(newEdge as Edge);
   });
 
   entitreeNodes.forEach((node) => {
-    const newNode: Partial<CustomNode> = {};
-
-    const isSpouse = !!node?.isSpouse;
-    const isSibling = !!node?.isSibling;
-    const isRoot = node?.id === rootId;
-
-    if (isSpouse) {
-      newNode.sourcePosition = isTreeHorizontal ? Bottom : Right;
-      newNode.targetPosition = isTreeHorizontal ? Top : Left;
-    } else if (isSibling) {
-      newNode.sourcePosition = isTreeHorizontal ? Top : Left;
-      newNode.targetPosition = isTreeHorizontal ? Bottom : Right;
-    } else {
-      newNode.sourcePosition = isTreeHorizontal ? Right : Bottom;
-      newNode.targetPosition = isTreeHorizontal ? Left : Top;
-    }
-
-    newNode.data = { label: node.name, direction, isRoot, ...node };
-    newNode.id = node.id;
-    newNode.type = "custom";
-
-    newNode.width = nodeWidth;
-    newNode.height = nodeHeight;
-
-    newNode.position = {
-      x: node.x,
-      y: node.y,
+    const newNode: CustomNode = {
+      data: { name: node.name, direction, isRoot: node.id === rootId, ...node },
+      id: node.id ?? "",
+      width: nodeWidth,
+      height: nodeHeight,
+      position: {
+        x: node.x,
+        y: node.y,
+      },
+      type: node.type ?? "text",
     };
 
-    nodes.push(newNode as CustomNode);
+    nodes.push(newNode);
   });
 
   return { nodes, edges };
@@ -166,41 +154,25 @@ export const layoutElements = (
 
 const { Top, Bottom, Left, Right } = Position;
 
-export type CustomNode = Node<
-  {
-    isSpouse?: boolean;
-    isSibling?: boolean;
-    label: string;
-    direction: string;
-    isRoot?: boolean;
-    children?: unknown[];
-    siblings?: unknown[];
-    spouses?: unknown[];
-  },
-  "custom"
->;
-
-export const customNode = memo(({ data }: NodeProps<CustomNode>) => {
-  const { isSpouse, isSibling, label, direction } = data;
+export const customNode = memo(({ data, type }: NodeProps<CustomNode>) => {
+  const { label, direction } = data;
 
   const isTreeHorizontal = direction === "LR";
 
   const getTargetPosition = () => {
-    if (isSpouse) {
-      return isTreeHorizontal ? Top : Left;
-    } else if (isSibling) {
-      return isTreeHorizontal ? Bottom : Right;
-    }
     return isTreeHorizontal ? Left : Top;
   };
 
   const isRootNode = data?.isRoot;
   const hasChildren = !!data?.children?.length;
-  const hasSiblings = !!data?.siblings?.length;
-  const hasSpouses = !!data?.spouses?.length;
 
   return (
-    <div className="px-4 py-2 shadow-md rounded-md border-2 h-[100px] w-[150px]">
+    <div
+      className={twMerge(
+        "px-4 py-2 shadow-md rounded-md border-2 h-[100px] w-[150px]",
+        nodeClassNames[type]
+      )}
+    >
       <div className="flex">
         <div className="rounded-full min-w-12 min-h-12 justify-center items-center flex border-2">
           {data.direction}
@@ -215,26 +187,6 @@ export const customNode = memo(({ data }: NodeProps<CustomNode>) => {
           type="source"
           position={isTreeHorizontal ? Right : Bottom}
           id={isTreeHorizontal ? Right : Bottom}
-        />
-      )}
-
-      {/* For spouses */}
-      {hasSpouses && (
-        <Handle
-          className={"w-16 !bg-teal-500"}
-          type="source"
-          position={isTreeHorizontal ? Bottom : Right}
-          id={isTreeHorizontal ? Bottom : Right}
-        />
-      )}
-
-      {/* For siblings */}
-      {hasSiblings && (
-        <Handle
-          className={"w-16 !bg-teal-500"}
-          type="source"
-          position={isTreeHorizontal ? Top : Left}
-          id={isTreeHorizontal ? Top : Left}
         />
       )}
 

@@ -108,7 +108,7 @@ export interface components {
         /** Graph */
         Graph: {
             /** Nodes */
-            nodes: components["schemas"]["Node"][];
+            nodes: components["schemas"]["NodeV2"][];
             /** Edges */
             edges: components["schemas"]["Edge"][];
         };
@@ -133,14 +133,6 @@ export interface components {
             text: string;
             metadata: components["schemas"]["NodeMetadata"];
         };
-        /** NodeCreate */
-        NodeCreate: {
-            /** Node Class */
-            node_class: string;
-            /** Title */
-            title: string;
-            content: components["schemas"]["NodeContent"];
-        };
         /** NodeMetadata */
         NodeMetadata: {
             /** Source */
@@ -150,6 +142,24 @@ export interface components {
              * Format: date-time
              */
             timestamp: string;
+        };
+        /**
+         * NodeType
+         * @enum {string}
+         */
+        NodeType: "text" | "image" | "audio" | "link";
+        /** NodeV2 */
+        NodeV2: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            type: components["schemas"]["NodeType"];
+            /** Content */
+            content: string;
+            metadata: components["schemas"]["NodeMetadata"];
+            /** Children */
+            children: string[];
         };
         /**
          * RoleEnum
@@ -216,7 +226,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["NodeCreate"];
+                "application/json": components["schemas"]["NodeV2"];
             };
         };
         responses: {

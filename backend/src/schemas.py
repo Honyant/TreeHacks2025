@@ -17,7 +17,7 @@ class NodeMetadata(BaseModel):
     timestamp: datetime
 
 
-class Node(BaseModel):
+class NodeV2(BaseModel):
     id: str
     name: str  # title of the node
     type: NodeType  # type of the node
@@ -32,6 +32,22 @@ class Node(BaseModel):
 class NodeContent(BaseModel):
     text: str
     metadata: NodeMetadata
+
+
+class NodeBase(BaseModel):
+    node_class: str
+    title: str
+    content: NodeContent
+
+
+class NodeCreate(NodeBase):
+    pass
+
+
+class Node(NodeBase):
+    id: str
+
+    model_config = {"from_attributes": True}
 
 
 class EdgeBase(BaseModel):
@@ -71,7 +87,7 @@ class ChatMessage(ChatMessageBase):
 
 
 class Graph(BaseModel):
-    nodes: List[Node]
+    nodes: List[NodeV2]
     edges: List[Edge]
 
 

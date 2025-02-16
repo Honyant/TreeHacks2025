@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import {
   ConnectionLineType,
+  NodeProps,
   Panel,
   ReactFlow,
   SelectionMode,
@@ -8,6 +9,7 @@ import {
   useNodesState,
 } from "@xyflow/react";
 
+import { components } from "../openapi";
 import {
   CustomNode,
   customNode,
@@ -15,8 +17,15 @@ import {
   layoutElements,
 } from "../utils/tree";
 
-const nodeTypes = {
-  custom: customNode,
+const nodeTypes: {
+  [key in components["schemas"]["Graph"]["nodes"][number]["type"]]: React.FC<
+    NodeProps<CustomNode>
+  >;
+} = {
+  text: customNode,
+  image: customNode,
+  link: customNode,
+  audio: customNode,
 };
 
 const { nodes: layoutedNodes, edges: layoutedEdges } = layoutElements(
